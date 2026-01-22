@@ -1,6 +1,6 @@
 import localFont from 'next/font/local'
 import { JetBrains_Mono } from 'next/font/google'
-import "@/styles/globals.css"
+import "./styles/globals.css"
 
 // Konfiguracja Zalando Sans SemiExpanded (Variable)
 const zalando = localFont({
