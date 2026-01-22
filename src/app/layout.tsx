@@ -1,31 +1,16 @@
 import localFont from 'next/font/local'
-import { JetBrains_Mono } from 'next/font/google'
 import "../styles/globals.css"
 
-// Konfiguracja Zalando Sans SemiExpanded (Variable)
+// Zostaw tylko swój lokalny font, jeśli go używasz
 const zalando = localFont({
-  src: [
-    {
-      path: '../../public/fonts/ZalandoSansSemiExpanded-VariableFont.ttf',
-      style: 'normal',
-    },
-    {
-      path: '../../public/fonts/ZalandoSansSemiExpanded-Italic-VariableFont.ttf',
-      style: 'italic',
-    },
-  ],
-  variable: '--font-brand', // Mapowanie na zmienną CSS
-})
-
-const jetbrains = JetBrains_Mono({ 
-  subsets: ['latin'], 
-  variable: '--font-mono' 
+  src: './fonts/ZalandoSans-Variable.woff2', // upewnij się, że ścieżka jest poprawna
+  variable: '--font-zalando',
 })
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="pl">
-      <body className={`${zalando.variable} ${jetbrains.variable} font-brand antialiased bg-[#020202]`}>
+      <body className={`${zalando.variable} antialiased`}>
         {children}
       </body>
     </html>
