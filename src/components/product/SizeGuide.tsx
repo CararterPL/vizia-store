@@ -22,9 +22,12 @@ export const SizeGuide = ({ isOpen, onClose }: { isOpen: boolean, onClose: () =>
       {/* Modal */}
       <div className="relative w-full max-w-4xl bg-zinc-950 border border-white/10 p-8 md:p-12 overflow-hidden">
         {/* Background Grid Accent */}
-        <div className="absolute inset-0 opacity-[0.03] pointer-events-none" 
-             style={{ backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90px, #fff 1px, transparent 1px)', size: '20px 20px' }} 
-        />
+<div className="absolute inset-0 opacity-[0.03] pointer-events-none" 
+     style={{ 
+       backgroundImage: 'linear-gradient(#fff 1px, transparent 1px), linear-gradient(90px, #fff 1px, transparent 1px)', 
+       backgroundSize: '20px 20px' 
+     }} 
+/>
 
         <div className="relative z-10">
           <div className="flex justify-between items-start mb-12">
