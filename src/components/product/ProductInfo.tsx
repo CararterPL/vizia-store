@@ -216,7 +216,7 @@ export const ProductInfo = () => {
     isConfirmingAutoVin ? 'bg-amber-500 text-black border-amber-500 hover:bg-amber-400' : ''
   }`}
 >
-  {isConfirmingAutoVin ? 'Potwierdź Auto_VIN //' : 'Dodaj do garażu //'}
+  {isConfirmingAutoVin ? 'Potwierdź Auto_VIN //' : 'Dodaj do koszyka //'}
 </Button>
       </div>
 
