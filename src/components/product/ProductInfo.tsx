@@ -209,14 +209,15 @@ export const ProductInfo = () => {
       {/* CTA BUTTON */}
       <div className="mb-6">
         <Button 
-          onClick={handleAddToCart}
-          variant={isConfirmingAutoVin ? "secondary" : "cta"} 
-          className={`w-full py-5 text-lg uppercase italic lg:shadow-none transition-all ${
-            isConfirmingAutoVin ? 'bg-amber-500 text-black border-amber-500' : ''
-          }`}
-        >
-          {isConfirmingAutoVin ? 'Potwierdź Auto_VIN //' : 'Dodaj do garażu //'}
-        </Button>
+  onClick={handleAddToCart}
+  // Zmieniamy "secondary" na "primary", bo "secondary" nie istnieje w definicji Twojego Buttona
+  variant={isConfirmingAutoVin ? "primary" : "cta"} 
+  className={`w-full py-5 text-lg uppercase italic lg:shadow-none transition-all ${
+    isConfirmingAutoVin ? 'bg-amber-500 text-black border-amber-500 hover:bg-amber-400' : ''
+  }`}
+>
+  {isConfirmingAutoVin ? 'Potwierdź Auto_VIN //' : 'Dodaj do garażu //'}
+</Button>
       </div>
 
       {/* TECHNICAL DATA */}
