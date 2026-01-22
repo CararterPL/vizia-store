@@ -62,21 +62,34 @@ export const Hero = () => {
         </div>
       </div>
 
-      {/* STATYSTYKI DOLNE */}
-      <div className="absolute bottom-10 left-6 md:left-20 z-10 flex gap-12 border-t border-white/5 pt-10 w-[calc(100%-3rem)] md:w-[calc(100%-10rem)]">
-        <div className="flex flex-col">
-          <span className="text-data text-[8px] text-vizia-red opacity-60">PRODUCTION_LIMIT</span>
-          <span className="font-brand font-black italic text-xl text-white">99_UNITS</span>
-        </div>
-        <div className="flex flex-col">
-          <span className="text-data text-[8px] text-zinc-600">LIFESPAN_PROTOCOL</span>
-          <span className="font-brand font-black italic text-xl text-white">365_DAYS</span>
-        </div>
-        <div className="flex flex-col border-l border-white/10 pl-12 hidden md:flex">
-          <span className="text-data text-[8px] text-zinc-600">PROJECT_LEAD</span>
-          <span className="font-brand font-black italic text-xl text-zinc-400 uppercase">Vince / HWL_2025</span>
-        </div>
-      </div>
+      {/* STATYSTYKI DOLNE - Chłodne, techniczne podejście */}
+<div className="absolute bottom-10 left-6 md:left-20 z-10 flex flex-wrap gap-8 md:gap-20 border-t border-white/5 pt-10 w-[calc(100%-3rem)] md:w-[calc(100%-10rem)]">
+  
+  <div className="flex flex-col">
+    <span className="text-data text-[10px] text-zinc-500 mb-1">GARMENT_ORIGIN</span>
+    <div className="flex items-baseline gap-2">
+       <span className="font-brand font-black italic text-xl text-white">HEAVY_COTTON_USA</span>
+    </div>
+  </div>
+  
+  <div className="flex flex-col">
+    <span className="text-data text-[10px] text-vizia-red mb-1">EDITION_STATUS</span>
+    <div className="flex items-baseline gap-2">
+       <span className="font-brand font-black italic text-xl text-white uppercase">Series_01_Drop</span>
+       <span className="text-zinc-600 text-[10px] ml-2 font-mono">/ AVAILABLE_UNTIL_2027</span>
+    </div>
+  </div>
+
+  <div className="flex flex-col border-l border-white/10 pl-8 hidden lg:flex">
+    <span className="text-data text-[10px] text-zinc-600 mb-1">FINISHING_LAB</span>
+    <span className="font-brand font-black italic text-xl text-zinc-400 uppercase">Vizia_Studio_Poland</span>
+  </div>
+
+  <div className="flex flex-col border-l border-white/10 pl-8 hidden xl:flex">
+    <span className="text-data text-[10px] text-zinc-600 mb-1">PROCESS_LOG</span>
+    <span className="font-brand font-black italic text-xl text-zinc-400 uppercase">Print_On_Order</span>
+  </div>
+</div>
 
       {/* SYGNATURA ŚWIETLNA */}
       <div className="absolute right-[-100px] top-1/2 -translate-y-1/2 rotate-90 hidden xl:block z-10">
