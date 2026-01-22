@@ -1,4 +1,4 @@
-import "../styles/globals.css"
+import "../../../styles/globals.css"
 import { Syne, JetBrains_Mono } from "next/font/google"
 
 const syne = Syne({ 
