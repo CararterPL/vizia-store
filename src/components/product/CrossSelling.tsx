@@ -5,9 +5,9 @@ import { Button } from '../ui/Button';
 import { ProductCard } from '../ui/ProductCard';
 
 const relatedProducts = [
-  { id: '911', name: 'GT3 RS', vin: 'SHDWRC-911RSGTTS-XX', left: 42, price: '259', daysLeft: 241, imgBack: '/products/vizia_shdwrc_911rsgt01ts-back.png', imgFront: '/products/vizia_shdwrc_911rsgt01ts-front.png' },
-  { id: 'G700', name: 'G-BRABUS', vin: 'SHDWRC-AMGGBRBTS-XX', left: 12, price: '259', daysLeft: 14, imgBack: '/products/vizia_shdwrc_amggbrb01ts-back.png', imgFront: '/products/vizia_shdwrc_911rsgt01ts-front.png' },
-  { id: 'GTD', name: 'MUSTANG GTD', vin: 'SHDWRC-MSTNGGTTS-XX', left: 7, price: '259', daysLeft: 310, imgBack: '/products/vizia_shdwrc_911rsgt01ts-front.png', imgFront: '/products/vizia_shdwrc_911rsgt01ts-front.png' },
+  { id: '911', name: 'GT3 RS', vin: 'SHDWRC-911RSGTTS-XX', series: 'Shadow Race', left: 42, price: '259', daysLeft: 241, imgBack: '/products/vizia_shdwrc_911rsgt01ts-back.png', imgFront: '/products/vizia_shdwrc_911rsgt01ts-front.png' },
+  { id: 'G700', name: 'G-BRABUS', vin: 'SHDWRC-AMGGBRBTS-XX', series: 'Shadow Race', left: 12, price: '259', daysLeft: 14, imgBack: '/products/vizia_shdwrc_amggbrb01ts-back.png', imgFront: '/products/vizia_shdwrc_911rsgt01ts-front.png' },
+  { id: 'GTD', name: 'MUSTANG GTD', vin: 'SHDWRC-MSTNGGTTS-XX', series: 'Shadow Race', left: 7, price: '259', daysLeft: 310, imgBack: '/products/vizia_shdwrc_911rsgt01ts-front.png', imgFront: '/products/vizia_shdwrc_911rsgt01ts-front.png' },
 ];
 
 export const CrossSelling = () => {
