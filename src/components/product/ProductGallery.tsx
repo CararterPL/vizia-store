@@ -5,68 +5,94 @@ import Image from 'next/image';
 
 const originalImages = [
   '/products/vizia_shdwrc_911rsgt01ts-back.png',
-  '/products/vizia_shdwrc_911rsgt01ts-back.png',
-  '/products/vizia_shdwrc_911rsgt01ts-back.png',
-  '/products/vizia_shdwrc_911rsgt01ts-back.png'
+  '/products/vizia-minijcwgp.webp',
+  '/products/vizia-mustang7gtd_view1.webp',
+  '/products/vizia_shdwrc_911rsgt01ts-front.png'
 ];
 
 export const ProductGallery = () => {
   const scrollRef = useRef<HTMLDivElement>(null);
+  const [activeIndex, setActiveIndex] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
   const [startX, setStartX] = useState(0);
   const [scrollLeft, setScrollLeft] = useState(0);
-  const [activeIndex, setActiveIndex] = useState(0);
+  
+  const [itemWidth, setItemWidth] = useState(0);
+  const [isMounted, setIsMounted] = useState(false);
 
-  // Stała definiująca szerokość panelu bocznego (musi być spójna z page.tsx)
-  const SIDE_PANEL_WIDTH = 'clamp(450px, 35vw, 550px)';
-
+  const SIDE_PANEL_WIDTH = 560; 
+  const HEADER_HEIGHT = 76;
   const images = [...originalImages, ...originalImages, ...originalImages];
 
-  useEffect(() => {
-    if (scrollRef.current) {
-      const el = scrollRef.current;
-      el.scrollLeft = el.scrollWidth / 3;
+  const calculateDimensions = useCallback(() => {
+    if (typeof window !== 'undefined') {
+      const isMobile = window.innerWidth < 1024;
+      const galleryHeight = window.innerHeight - HEADER_HEIGHT;
+      const width = isMobile ? window.innerWidth * 0.9 : galleryHeight * 0.8;
+      setItemWidth(width);
     }
   }, []);
+
+  useEffect(() => {
+    setIsMounted(true);
+    calculateDimensions();
+    window.addEventListener('resize', calculateDimensions);
+    return () => window.removeEventListener('resize', calculateDimensions);
+  }, [calculateDimensions]);
+
+  const getOffset = useCallback(() => {
+    if (typeof window === 'undefined') return 0;
+    const isMobile = window.innerWidth < 1024;
+    if (isMobile) return (window.innerWidth - itemWidth) / 2;
+    return (window.innerWidth - SIDE_PANEL_WIDTH - itemWidth) / 2;
+  }, [itemWidth]);
 
   const updateIndex = useCallback(() => {
     const el = scrollRef.current;
-    if (!el) return;
-    const singleSetWidth = el.scrollWidth / 3;
-    const itemWidth = singleSetWidth / originalImages.length;
-    const relativeScroll = el.scrollLeft % singleSetWidth;
-    const index = Math.round(relativeScroll / itemWidth) % originalImages.length;
-    setActiveIndex(index);
-  }, []);
+    if (!el || itemWidth === 0) return;
+    const offset = getOffset();
+    const index = Math.round((el.scrollLeft + offset - (itemWidth * originalImages.length)) / itemWidth);
+    setActiveIndex(Math.abs(index % originalImages.length));
 
-  const handleScroll = () => {
-    const el = scrollRef.current;
-    if (!el) return;
-    updateIndex();
-    const singleSetWidth = el.scrollWidth / 3;
+    const totalSetWidth = itemWidth * originalImages.length;
     if (!isDragging) {
-      if (el.scrollLeft >= singleSetWidth * 2) el.scrollLeft -= singleSetWidth;
-      else if (el.scrollLeft <= 5) el.scrollLeft += singleSetWidth;
+      if (el.scrollLeft >= totalSetWidth * 2) el.scrollLeft -= totalSetWidth;
+      if (el.scrollLeft <= totalSetWidth / 2) el.scrollLeft += totalSetWidth;
     }
-  };
+  }, [isDragging, itemWidth, getOffset]);
+
+  useEffect(() => {
+    const el = scrollRef.current;
+    if (el && itemWidth > 0) {
+      const offset = getOffset();
+      el.scrollLeft = (itemWidth * originalImages.length) - offset;
+      const timeout = setTimeout(() => {
+        el.addEventListener('scroll', updateIndex);
+        updateIndex();
+      }, 50);
+      return () => {
+        clearTimeout(timeout);
+        el.removeEventListener('scroll', updateIndex);
+      }
+    }
+  }, [updateIndex, itemWidth, getOffset]);
+
+  if (!isMounted) return <div className="w-full h-full bg-black" />;
+  const offset = getOffset();
 
   const scrollManual = (dir: 'l' | 'r') => {
     if (scrollRef.current) {
-      const amount = scrollRef.current.clientWidth;
-      scrollRef.current.scrollBy({ 
-        left: dir === 'l' ? -amount : amount, 
-        behavior: 'smooth' 
-      });
+      scrollRef.current.scrollBy({ left: dir === 'l' ? -itemWidth : itemWidth, behavior: 'smooth' });
     }
   };
 
   return (
-    <div className="relative w-full h-full group bg-black overflow-hidden">
-      
-      {/* KONTENER ZDJĘĆ - zajmuje 100% szerokości, wchodzi pod panel boczny */}
+    <div 
+      className="relative w-full bg-black overflow-hidden flex flex-col lg:flex-row"
+      style={{ height: `calc(100vh - ${HEADER_HEIGHT}px)` }}
+    >
       <div 
         ref={scrollRef}
-        onScroll={handleScroll}
         onMouseDown={(e) => {
           setIsDragging(true);
           setStartX(e.pageX - scrollRef.current!.offsetLeft);
@@ -76,68 +102,84 @@ export const ProductGallery = () => {
         onMouseLeave={() => setIsDragging(false)}
         onMouseMove={(e) => {
           if (!isDragging) return;
-          e.preventDefault();
           const x = e.pageX - scrollRef.current!.offsetLeft;
           const walk = (x - startX) * 1.5;
           scrollRef.current!.scrollLeft = scrollLeft - walk;
         }}
-        className={`flex h-full w-full overflow-x-auto overflow-y-hidden scrollbar-hide select-none ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
+        className={`flex h-full w-full overflow-x-auto scrollbar-hide snap-x snap-mandatory ${isDragging ? 'cursor-grabbing' : 'cursor-grab'}`}
+        style={{ scrollPaddingLeft: `${offset}px` }}
       >
-        <div className="flex h-full w-max">
-          {images.map((img, idx) => (
-            <div key={idx} className="relative h-full flex-shrink-0 border-r border-white/5" style={{ aspectRatio: '4/5' }}>
-              <Image src={img} alt={`Frame_${idx}`} fill priority={idx >= originalImages.length && idx < originalImages.length * 2} className="object-cover pointer-events-none" />
-            </div>
-          ))}
+        <div className="flex h-full items-center">
+          <div className="flex-shrink-0" style={{ width: `${offset}px` }} />
+          
+          {images.map((img, idx) => {
+            const isCurrent = (idx % originalImages.length) === activeIndex;
+            return (
+              <div 
+                key={idx} 
+                className={`relative h-full flex-shrink-0 snap-start transition-all duration-500 ease-in-out
+                  ${isCurrent ? 'opacity-100' : 'opacity-25 blur-[2px]'}
+                `}
+                style={{ width: `${itemWidth}px` }}
+              >
+                <div className="absolute inset-0 flex items-center justify-center lg:relative lg:h-full lg:w-full">
+                  {/* Przesunięcie top-[-15%] likwiduje margines u góry na mobile */}
+                  <div className="relative w-full h-[85%] top-[-15%] lg:top-0 lg:h-full">
+                    <Image 
+                      src={img} 
+                      alt="Vizia_Asset" 
+                      fill 
+                      className="object-cover" 
+                      priority={idx >= originalImages.length && idx < originalImages.length * 2}
+                    />
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+
+          <div className="flex-shrink-0" style={{ width: `calc(100vw - ${itemWidth}px)` }} />
         </div>
       </div>
 
-      {/* DESKTOP UI: STRZAŁKI - Odsunięte od panelu bocznego */}
-      <div 
-        className="hidden lg:flex absolute inset-y-0 left-0 justify-between items-center px-12 pointer-events-none z-30"
-        style={{ width: `calc(100% - ${SIDE_PANEL_WIDTH})` }}
-      >
-        <button onClick={() => scrollManual('l')} className="pointer-events-auto group flex items-center gap-4 outline-none">
-          <div className="flex gap-1.5">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="w-1.5 h-8 bg-amber-500 skew-x-[-20deg] transition-all duration-300 opacity-10 group-hover:opacity-100 group-hover:animate-pulse" style={{ animationDelay: `${(3-i) * 150}ms` }} />
-            ))}
-          </div>
-          <span className="font-mono text-[9px] text-amber-500 tracking-[0.4em] opacity-0 group-hover:opacity-100 transition-all uppercase transform -translate-x-2 group-hover:translate-x-0">Shift_L</span>
-        </button>
-
-        <button onClick={() => scrollManual('r')} className="pointer-events-auto group flex items-center gap-4 text-right outline-none">
-          <span className="font-mono text-[9px] text-amber-500 tracking-[0.4em] opacity-0 group-hover:opacity-100 transition-all uppercase transform translate-x-2 group-hover:translate-x-0">Shift_R</span>
-          <div className="flex gap-1.5">
-            {[1, 2, 3].map((i) => (
-              <div key={i} className="w-1.5 h-8 bg-amber-500 skew-x-[-20deg] transition-all duration-300 opacity-10 group-hover:opacity-100 group-hover:animate-pulse" style={{ animationDelay: `${i * 150}ms` }} />
-            ))}
-          </div>
-        </button>
-      </div>
-
-      {/* DASH INDICATORS - Centrowane w widocznym oknie (bez panelu bocznego) */}
-      <div 
-        className="absolute bottom-12 z-30 flex gap-4 pointer-events-none transition-all duration-500"
-        style={{ 
-          left: `calc((100% - ${SIDE_PANEL_WIDTH}) / 2)`,
-          transform: 'translateX(-50%)'
-        }}
-      >
+      {/* MOBILE INDICATORS */}
+      <div className="absolute bottom-12 w-full flex justify-center gap-2 lg:hidden pointer-events-none z-30">
         {originalImages.map((_, i) => (
-          <div key={i} className="flex flex-col items-center gap-2">
-            <div className={`h-[1px] transition-all duration-500 ease-out ${activeIndex === i ? 'w-12 bg-white shadow-[0_0:10px_rgba(255,255,255,0.4)]' : 'w-4 bg-white/10'}`} />
-            <span className={`font-mono text-[7px] transition-opacity duration-500 ${activeIndex === i ? 'opacity-100' : 'opacity-0'}`}>UNIT_0{i + 1}</span>
-          </div>
+          <div key={i} className={`h-[2px] transition-all duration-300 ${activeIndex === i ? 'w-8 bg-amber-500 shadow-[0_0_8px_#f59e0b]' : 'w-2 bg-white/20'}`} />
         ))}
       </div>
 
-      {/* TECH DECORATION - Przesunięte, by nie chowało się pod panel */}
+      {/* DESKTOP HUD */}
       <div 
-        className="absolute top-8 font-mono text-[7px] text-white/20 tracking-[0.4em] uppercase pointer-events-none hidden lg:block"
-        style={{ right: `calc(${SIDE_PANEL_WIDTH} + 2rem)` }}
+        className="hidden lg:flex absolute inset-y-0 left-0 pointer-events-none z-20 flex-col justify-between p-12"
+        style={{ width: `calc(100vw - ${SIDE_PANEL_WIDTH}px)` }}
       >
-        Vizia_Optics_System // Active
+        <div className="flex items-center gap-3">
+          <div className="w-1.5 h-1.5 bg-amber-500 animate-pulse" />
+          <span className="font-mono text-[8px] text-amber-500 tracking-[0.4em] uppercase">Visual_Stream_Live</span>
+        </div>
+
+        <div className="flex justify-between items-center w-full pointer-events-auto px-4">
+          <button onClick={() => scrollManual('l')} className="p-4 group focus:outline-none">
+            <div className="flex gap-1">
+              {[0, 1, 2].map(i => <div key={i} className="w-1 h-8 bg-amber-500 skew-x-[-15deg] opacity-20 group-hover:opacity-100 transition-all" />)}
+            </div>
+          </button>
+          <button onClick={() => scrollManual('r')} className="p-4 group focus:outline-none">
+            <div className="flex gap-1">
+              {[0, 1, 2].map(i => <div key={i} className="w-1 h-8 bg-amber-500 skew-x-[-15deg] opacity-20 group-hover:opacity-100 transition-all" />)}
+            </div>
+          </button>
+        </div>
+
+        <div className="flex justify-center gap-6">
+          {originalImages.map((_, i) => (
+            <div key={i} className="flex flex-col items-center gap-2">
+               <div className={`h-[2px] transition-all duration-500 ${activeIndex === i ? 'w-12 bg-amber-500 shadow-[0_0_12px_#f59e0b]' : 'w-4 bg-white/10'}`} />
+               <span className={`font-mono text-[7px] ${activeIndex === i ? 'text-amber-500 opacity-100' : 'text-zinc-700 opacity-40'}`}>0{i+1}</span>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

@@ -133,7 +133,7 @@ export const CartDrawer = ({ isOpen, onClose }: { isOpen: boolean, onClose: () =
               </div>
               
               <div className="text-center opacity-20">
-                <p className="text-[8px] text-zinc-500 uppercase tracking-[0.4em] font-mono">Vizia_Laboratory_Systems_v.1.0</p>
+                <p className="text-[8px] text-zinc-500 uppercase tracking-[0.4em] font-mono">Vizia_Wear</p>
               </div>
             </div>
           )}

@@ -1,77 +1,68 @@
 'use client';
 
-import React, { use } from 'react';
+import React, { use, useState } from 'react';
 import { ProductGallery } from "../../../components/product/ProductGallery";
 import { ProductInfo } from "../../../components/product/ProductInfo";
+import { ProductFeatures } from "../../../components/product/ProductFeatures";
 import { CrossSelling } from "../../../components/product/CrossSelling";
-import { Button } from "../../../components/ui/Button";
+
+export type ProductSeries = 'SHADOW_RACE' | 'THE_HIDEOUT' | 'CLASSICS_GARAGE' | 'POLE_POSITION';
 
 export default function ProductPage({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
-  const productId = resolvedParams.id;
+  const [currentSeries, setCurrentSeries] = useState<ProductSeries>('SHADOW_RACE');
+  const [isNRG, setIsNRG] = useState(false);
+
+  const productData = {
+    name: "MINI JCW GP",
+    series: currentSeries,
+    price: 359,
+    limit: 99,
+    remaining: 34,
+    daysLeft: 14,
+    baseVin: "SHDWRC-MNJCW01TS-",
+    dropDate: "2026-03-01"
+  };
 
   return (
-    <main className="relative min-h-screen w-full bg-black">
-      
-      {/* SEKCJA GŁÓWNA (HERO) */}
-      <div className="relative flex flex-col lg:block">
-        
-        {/* GALERIA - Na desktopie zajmuje całe tło sekcji Hero */}
-        <div className="relative w-full h-[60vh] lg:h-screen lg:sticky lg:top-0 z-0">
+    <main className="relative min-h-screen w-full bg-black text-white">
+      {/* ADMIN TOGGLE */}
+      <div className="fixed bottom-4 left-4 z-[200] bg-zinc-900/80 backdrop-blur-md border border-white/10 p-2 flex gap-2 rounded-sm opacity-40 hover:opacity-100 transition-opacity">
+        <select 
+          onChange={(e) => setCurrentSeries(e.target.value as ProductSeries)}
+          className="bg-black text-[9px] font-mono p-1 border border-white/10"
+          value={currentSeries}
+        >
+          <option value="SHADOW_RACE">SHADOW RACE</option>
+          <option value="THE_HIDEOUT">THE HIDEOUT</option>
+          <option value="CLASSICS_GARAGE">CLASSICS GARAGE</option>
+          <option value="POLE_POSITION">POLE POSITION</option>
+        </select>
+        <button onClick={() => setIsNRG(!isNRG)} className="text-[9px] font-mono px-2 py-1 border border-white/10">
+          NRG: {isNRG ? 'ON' : 'OFF'}
+        </button>
+      </div>
+
+      {/* GŁÓWNA SEKCJA PRODUKTU - Z marginesem pod Header (76px) */}
+      <div className="relative flex flex-col lg:block pt-[76px]">
+        {/* GALERIA */}
+        <div className="relative w-full h-[60vh] lg:h-[calc(100vh-76px)] lg:sticky lg:top-[76px] z-0">
           <ProductGallery />
         </div>
 
-        {/* PANEL INFO - "Frozen Glass" nakładka na galerię */}
-        <aside 
-          className="
-            relative z-10 
-            w-full lg:w-[clamp(450px,35vw,550px)] 
-            lg:absolute lg:top-0 lg:right-0 lg:h-full
-            bg-black lg:bg-black/40 lg:backdrop-blur-2xl 
-            border-t lg:border-t-0 lg:border-l border-white/10 
-          "
-        >
-          {/* Kontener z własnym scrollem dla treści info, jeśli tekst jest długi */}
-          <div className="p-6 md:p-14 pb-32 lg:pb-14 h-full lg:overflow-y-auto scrollbar-hide">
-            <ProductInfo />
+        {/* INFO PANEL - Szerokość 560px, odsunięty od góry o 76px */}
+        <aside className="relative z-10 w-full lg:w-[560px] lg:absolute lg:top-[76px] lg:right-0 lg:h-[calc(100vh-76px)] bg-black/60 lg:backdrop-blur-2xl border-t lg:border-t-0 lg:border-l border-white/10">
+          <div className="h-full overflow-y-auto scrollbar-hide p-6 lg:p-12 pb-32">
+            <ProductInfo product={productData} isNRG={isNRG} />
           </div>
-
-          {/* Pionowa linia pomocnicza dla efektu technicznego */}
-          <div className="hidden lg:block absolute inset-y-0 left-0 w-[1px] bg-gradient-to-b from-transparent via-white/20 to-transparent pointer-events-none" />
         </aside>
       </div>
 
-      {/* SEKCJA CROSS-SELLINGU */}
-      <div className="relative z-20 bg-black px-6 md:px-14 lg:px-24 py-12 lg:py-24 border-t border-white/10">
-        <CrossSelling currentProductId={productId} />
-      </div>
+      <ProductFeatures />
+      <CrossSelling />
 
-      {/* STICKY CTA NA MOBILE */}
-      <div className="fixed bottom-0 left-0 right-0 z-[100] p-4 bg-black/80 backdrop-blur-md border-t border-white/10 lg:hidden">
-        <Button 
-          variant="cta" 
-          className="w-full py-4 uppercase italic text-lg tracking-tighter shadow-[0_-10px_30px_rgba(0,0,0,0.5)]"
-          onClick={() => {
-            const ctaBtn = document.querySelector('#main-cta-button') as HTMLButtonElement;
-            ctaBtn?.click();
-          }}
-        >
-          Add to Vault // 259 PLN
-        </Button>
-      </div>
-
-      {/* FOOTER */}
-      <footer className="bg-black py-12 px-6 md:px-14 lg:px-24 border-t border-white/5">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
-          <span className="text-[8px] font-mono text-zinc-800 uppercase tracking-[0.5em]">
-            Vizia_Technical_Apparel // Release_2026.01
-          </span>
-          <div className="flex gap-8 font-mono text-[7px] text-zinc-600 uppercase tracking-widest">
-            <a href="#" className="hover:text-white transition-colors">Privacy_Policy</a>
-            <a href="#" className="hover:text-white transition-colors">Terms_of_Service</a>
-            <a href="#" className="hover:text-white transition-colors">Contact_Division</a>
-          </div>
-        </div>
+      <footer className="bg-black py-12 px-6 border-t border-white/5 text-center">
+        <span className="text-[8px] font-mono text-zinc-800 uppercase tracking-[0.5em]">VIZIA WEAR // 2026</span>
       </footer>
     </main>
   );
