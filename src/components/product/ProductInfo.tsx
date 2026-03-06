@@ -1,39 +1,60 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { supabase } from '../../lib/supabase';
 import { ProductHeader } from './info/ProductHeader';
 import { SizeSelector } from './info/SizeSelector';
 import { VinModule } from './info/VinModule';
 import { ProductAccordion } from './info/ProductAccordion';
 import { Button } from '../ui/Button';
-import { useCart } from '../../context/CartContext'; // IMPORT KONTEKSTU
+import { useCart } from '../../context/CartContext';
 
-interface ProductInfoProps {
-  product: any;
-  isNRG?: boolean;
-}
-
-export const ProductInfo = ({ product, isNRG = false }: ProductInfoProps) => {
+export const ProductInfo = ({ product, isNRG = false }: any) => {
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
-  const { addItem } = useCart(); // POBIERAMY FUNKCJĘ DODAWANIA
+  const [selectedVin, setSelectedVin] = useState<string | null>(null);
+  const [isReserving, setIsReserving] = useState(false);
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
+  const [uiMessage, setUiMessage] = useState<{type: 'error' | 'success' | 'info', text: string} | null>(null);
 
-  // LOGIKA CTA
-  const getCTAConfig = () => {
-    if (product.series === 'POLE_POSITION') {
-      return { text: 'COMING_SOON // NOT_FOR_SALE', disabled: true };
-    }
-    if ((product.series === 'THE_HIDEOUT' || product.series === 'CLASSICS_GARAGE') && !isNRG) {
-      return { text: 'NRG_MEMBERS_ONLY // LOCKED', disabled: true };
-    }
-    return { text: 'KUP TERAZ!', disabled: false };
-  };
+  const { addItem } = useCart();
 
-  const cta = getCTAConfig();
+  // Logika czasu
+  const now = new Date();
+  const releaseDate = product?.release_date ? new Date(product.release_date) : null;
+  
+  let isPreRelease = false;
+  let isClassicsGarage = false;
 
-  // FUNKCJA DODAWANIA DO KOSZYKA
-  const handleAddToCart = () => {
-    if (!selectedSize) {
-      alert("Proszę wybrać rozmiar przed dodaniem do garażu.");
+  if (releaseDate && !isNaN(releaseDate.getTime())) {
+    const classicsDate = new Date(releaseDate);
+    classicsDate.setFullYear(releaseDate.getFullYear() + 1);
+    isPreRelease = now < releaseDate;
+    isClassicsGarage = now > classicsDate;
+  }
+
+  const handleAddToCart = async () => {
+    setUiMessage(null);
+    if (!selectedSize) { setUiMessage({ type: 'error', text: 'REQUIRED_ACTION: SELECT_SIZE_PROTO' }); return; }
+    if (!selectedVin) { setUiMessage({ type: 'error', text: 'SYSTEM_ERROR: VIN_NOT_ALLOCATED' }); return; }
+
+    setIsReserving(true);
+    const cleanVin = selectedVin.trim().toUpperCase();
+    
+    // USUWAMY filtr product_id na moment testu, żeby sprawdzić czy to on nie blokuje 
+    // (czasem ID w bazie to UUID, a w kodzie string i się nie parują)
+    const { data, error } = await supabase
+      .from('vin_pool')
+      .update({ assigned_at: new Date().toISOString() })
+      .eq('vin_full', cleanVin)
+      .eq('is_sold', false)
+      .is('assigned_at', null)
+      .select();
+
+    if (error || !data || data.length === 0) {
+      console.log("UPDATE_ATTEMPT_FAILED", { cleanVin, error, data });
+      setUiMessage({ type: 'error', text: 'LOCK_FAILED: UNIT_BUSY_OR_NOT_FOUND' });
+      setIsReserving(false);
+      setRefreshTrigger(prev => prev + 1);
       return;
     }
 
@@ -42,36 +63,60 @@ export const ProductInfo = ({ product, isNRG = false }: ProductInfoProps) => {
       name: product.name,
       price: product.price,
       size: selectedSize,
-      vin: product.baseVin || 'GENERIC_VIN', // Upewnij się, że przekazujesz VIN
+      vin: cleanVin,
       quantity: 1
     });
 
-    // Opcjonalnie: Możesz tu wywołać otwarcie CartDrawera, jeśli masz taką funkcję w kontekście
+    setUiMessage({ type: 'success', text: `UNIT_LOCKED: ${cleanVin.split('-').pop()}` });
+    setRefreshTrigger(prev => prev + 1);
+    setSelectedVin(null);
+    setIsReserving(false);
   };
 
   return (
     <div className="space-y-10">
-      <ProductHeader product={product} />
+      <ProductHeader product={product} key={`header-${refreshTrigger}`} />
 
-      {!(product.series === 'CLASSICS_GARAGE' && !isNRG) && (
+      {(!isPreRelease || isNRG) && (!isClassicsGarage || isNRG) ? (
         <>
           <SizeSelector selectedSize={selectedSize} onSizeSelect={setSelectedSize} />
-          <VinModule series={product.series} isNRG={isNRG} baseVin={product.baseVin} />
+          <VinModule 
+            key={refreshTrigger}
+            series={product.series} 
+            isNRG={isNRG} 
+            baseVin={product.baseVin} 
+            productId={product.id}
+            onVinSelect={setSelectedVin}
+          />
         </>
+      ) : (
+        <div className="p-8 border border-white/10 bg-white/[0.02] text-center">
+          <p className="font-brand italic font-black text-2xl text-white uppercase tracking-tighter">
+            {isPreRelease ? 'Coming Soon' : 'Classics Garage'}
+          </p>
+          <p className="text-[10px] font-mono text-zinc-500 uppercase mt-2">NRG Subscribers Only</p>
+        </div>
       )}
 
       <div className="pt-2">
+        {uiMessage && (
+          <div className={`p-4 border font-mono text-[10px] tracking-[0.2em] mb-4 ${
+            uiMessage.type === 'error' ? 'text-red-500 border-red-500/30' : 'text-emerald-500 border-emerald-500/30'
+          }`}>
+            {uiMessage.text}
+          </div>
+        )}
+
         <Button 
           variant="cta" 
           size="lg" 
-          disabled={cta.disabled}
-          onClick={handleAddToCart} // PODPIĘCIE FUNKCJI
-          className={`w-full text-sm py-8 font-black italic tracking-[0.2em] ${cta.disabled ? 'opacity-30 grayscale' : ''}`}
+          disabled={isReserving || (isPreRelease && !isNRG) || (isClassicsGarage && !isNRG)}
+          onClick={handleAddToCart}
+          className="w-full text-sm py-8 font-black italic tracking-[0.2em]"
         >
-          {cta.text}
+          {isReserving ? 'SYNCHRONIZING...' : 'DODAJ DO GARAŻU'}
         </Button>
       </div>
-
       <ProductAccordion />
     </div>
   );

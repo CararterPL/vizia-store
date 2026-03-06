@@ -3,14 +3,11 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import Image from 'next/image';
 
-const originalImages = [
-  '/products/vizia_shdwrc_911rsgt01ts-back.png',
-  '/products/vizia-minijcwgp.webp',
-  '/products/vizia-mustang7gtd_view1.webp',
-  '/products/vizia_shdwrc_911rsgt01ts-front.png'
-];
+interface ProductGalleryProps {
+  images: string[];
+}
 
-export const ProductGallery = () => {
+export const ProductGallery = ({ images: supabaseImages = [] }: ProductGalleryProps) => {
   const scrollRef = useRef<HTMLDivElement>(null);
   const [activeIndex, setActiveIndex] = useState(0);
   const [isDragging, setIsDragging] = useState(false);
@@ -22,7 +19,11 @@ export const ProductGallery = () => {
 
   const SIDE_PANEL_WIDTH = 560; 
   const HEADER_HEIGHT = 76;
-  const images = [...originalImages, ...originalImages, ...originalImages];
+
+  // Używamy zdjęć z Supabase lub pustej tablicy
+  const originalImages = supabaseImages.length > 0 ? supabaseImages : [];
+  // Tworzymy potrójną listę dla efektu nieskończoności
+  const displayImages = [...originalImages, ...originalImages, ...originalImages];
 
   const calculateDimensions = useCallback(() => {
     if (typeof window !== 'undefined') {
@@ -49,8 +50,10 @@ export const ProductGallery = () => {
 
   const updateIndex = useCallback(() => {
     const el = scrollRef.current;
-    if (!el || itemWidth === 0) return;
+    if (!el || itemWidth === 0 || originalImages.length === 0) return;
     const offset = getOffset();
+    
+    // Logika wyliczania indeksu oparta na dynamicznej długości tablicy
     const index = Math.round((el.scrollLeft + offset - (itemWidth * originalImages.length)) / itemWidth);
     setActiveIndex(Math.abs(index % originalImages.length));
 
@@ -59,25 +62,40 @@ export const ProductGallery = () => {
       if (el.scrollLeft >= totalSetWidth * 2) el.scrollLeft -= totalSetWidth;
       if (el.scrollLeft <= totalSetWidth / 2) el.scrollLeft += totalSetWidth;
     }
-  }, [isDragging, itemWidth, getOffset]);
+  }, [isDragging, itemWidth, getOffset, originalImages.length]);
 
   useEffect(() => {
     const el = scrollRef.current;
-    if (el && itemWidth > 0) {
+    if (el && itemWidth > 0 && originalImages.length > 0) {
       const offset = getOffset();
+      // Ustawienie początkowe na środkowym secie zdjęć
       el.scrollLeft = (itemWidth * originalImages.length) - offset;
+      
+      const handleScroll = () => updateIndex();
+      
       const timeout = setTimeout(() => {
-        el.addEventListener('scroll', updateIndex);
+        el.addEventListener('scroll', handleScroll);
         updateIndex();
       }, 50);
+
       return () => {
         clearTimeout(timeout);
-        el.removeEventListener('scroll', updateIndex);
+        el.removeEventListener('scroll', handleScroll);
       }
     }
-  }, [updateIndex, itemWidth, getOffset]);
+  }, [updateIndex, itemWidth, getOffset, originalImages.length]);
 
-  if (!isMounted) return <div className="w-full h-full bg-black" />;
+  // Loader dopóki nie ma zdjęć
+  if (!isMounted || originalImages.length === 0) {
+    return (
+      <div className="w-full h-full bg-black flex items-center justify-center">
+        <span className="font-mono text-[8px] text-zinc-800 uppercase tracking-[0.5em] animate-pulse">
+          Synchronizing_Assets...
+        </span>
+      </div>
+    );
+  }
+
   const offset = getOffset();
 
   const scrollManual = (dir: 'l' | 'r') => {
@@ -112,24 +130,23 @@ export const ProductGallery = () => {
         <div className="flex h-full items-center">
           <div className="flex-shrink-0" style={{ width: `${offset}px` }} />
           
-          {images.map((img, idx) => {
+          {displayImages.map((img, idx) => {
             const isCurrent = (idx % originalImages.length) === activeIndex;
             return (
               <div 
-                key={idx} 
+                key={`${img}-${idx}`} 
                 className={`relative h-full flex-shrink-0 snap-start transition-all duration-500 ease-in-out
-                  ${isCurrent ? 'opacity-100' : 'opacity-25 blur-[2px]'}
+                  ${isCurrent ? 'opacity-100 scale-100' : 'opacity-25 blur-[2px] scale-95'}
                 `}
                 style={{ width: `${itemWidth}px` }}
               >
                 <div className="absolute inset-0 flex items-center justify-center lg:relative lg:h-full lg:w-full">
-                  {/* Przesunięcie top-[-15%] likwiduje margines u góry na mobile */}
                   <div className="relative w-full h-[85%] top-[-15%] lg:top-0 lg:h-full">
                     <Image 
                       src={img} 
                       alt="Vizia_Asset" 
                       fill 
-                      className="object-cover" 
+                      className="object-contain" // Zmienione na object-contain dla renderów aut
                       priority={idx >= originalImages.length && idx < originalImages.length * 2}
                     />
                   </div>

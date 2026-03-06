@@ -1,87 +1,141 @@
 'use client';
-import { Input } from '../../ui/Input';
-import { Button } from '../../ui/Button';
 
-export const VinModule = ({ series, isNRG, baseVin }: any) => {
-  // 1. POLE POSITION - Zapowiedź dropu
-  if (series === 'POLE_POSITION') {
-    return (
-      <div className="p-6 bg-zinc-900/30 border border-white/5 space-y-4">
-        <span className="text-[9px] font-mono text-zinc-600 uppercase tracking-widest">VIN_Reservation_Status</span>
-        <p className="text-[11px] font-mono text-zinc-400 leading-relaxed uppercase">
-          Numer VIN zostanie odblokowany w momencie dropu. <br/>
-          <span className="text-vizia-red font-bold">Zapisz się do NRG_NOTIFY</span>, aby otrzymać alert o starcie i zarezerwować swój numer przed innymi.
-        </p>
-        {/* Formularz zapisu dodany dla Pole Position zgodnie z prośbą */}
-        {!isNRG && (
-          <div className="flex gap-2 pt-2 border-t border-white/5 mt-4 pt-4">
-            <Input label="EARLY_ACCESS" placeholder="Enter Email" />
-            <div className="flex items-end pb-0.5">
-              <Button size="sm">Notify_Me</Button>
-            </div>
-          </div>
-        )}
-      </div>
-    );
-  }
+import React, { useState, useEffect } from 'react';
+import { supabase } from '../../../lib/supabase';
+import { useNRG } from '../../../context/NRGContext'; // Importujemy Context
 
-  // 2. THE_HIDEOUT - Widoczne dla wszystkich, ale VIN tylko po NRG
-  if (series === 'THE_HIDEOUT' && !isNRG) {
-    return (
-      <div className="p-6 bg-vizia-red/5 border border-vizia-red/20 space-y-4">
-        <span className="text-[9px] font-mono text-vizia-red uppercase tracking-widest font-bold">NRG_Exclusive_Access</span>
-        <p className="text-[11px] font-mono text-zinc-400 leading-relaxed uppercase">
-          Seria <span className="text-white">The Hideout</span> jest dostępna wyłącznie dla zweryfikowanych członków sieci. 
-          Zaloguj się, aby odblokować protokół VIN i możliwość zakupu.
-        </p>
-        <div className="flex gap-2 pt-2">
-           <Input label="JOIN_NRG" placeholder="Enter Email" />
-           <div className="flex items-end pb-0.5"><Button size="sm">Join</Button></div>
-        </div>
-      </div>
-    );
-  }
+export const VinModule = ({ series, baseVin, productId, onVinSelect }: any) => {
+  const { isNRG } = useNRG(); // Pobieramy stan globalny
+  const [unitSlot, setUnitSlot] = useState('');
+  const [status, setStatus] = useState<'idle' | 'checking' | 'available' | 'taken'>('idle');
+  const [autoVin, setAutoVin] = useState<string | null>(null);
 
-  // 3. CLASSICS_GARAGE - Tylko dla NRG
-  if (series === 'CLASSICS_GARAGE' && !isNRG) {
-    return (
-      <div className="p-12 border border-dashed border-white/10 text-center">
-        <span className="text-[10px] font-mono text-zinc-700 uppercase tracking-[0.5em]">Unauthorized_Access // 403</span>
-      </div>
-    );
-  }
+  // --- LOGIKA DLA ZWYKŁYCH UŻYTKOWNIKÓW (AUTO-ALLOCATION) ---
+  useEffect(() => {
+    // Jeśli użytkownik NIE jest NRG, system sam szuka pierwszego wolnego VINu
+    if (!isNRG && series !== 'POLE_POSITION' && productId) {
+      const fetchAutoVin = async () => {
+        const { data } = await supabase
+          .from('vin_pool')
+          .select('vin_full')
+          .eq('product_id', productId)
+          .eq('is_sold', false)
+          .is('assigned_at', null)
+          .order('vin_full', { ascending: true })
+          .limit(1)
+          .single();
 
-  // 4. STAN DOMYŚLNY (SHADOW RACE lub dowolna seria z aktywnym NRG)
+        if (data) {
+          setAutoVin(data.vin_full);
+          onVinSelect(data.vin_full);
+        } else {
+          onVinSelect(null);
+        }
+      };
+      fetchAutoVin();
+    }
+  }, [isNRG, productId, series, onVinSelect]);
+
+  // --- LOGIKA DLA NRG (MANUAL VERIFICATION) ---
+  const checkVinAvailability = async (val: string) => {
+    if (val.length !== 2) {
+      setStatus('idle');
+      onVinSelect(null);
+      return;
+    }
+
+    setStatus('checking');
+    const fullVin = `${baseVin}-${val}`.toUpperCase(); 
+
+    const { data, error } = await supabase
+      .from('vin_pool')
+      .select('is_sold, assigned_at')
+      .eq('vin_full', fullVin)
+      .eq('product_id', productId)
+      .single();
+
+    if (error || !data || data.is_sold || data.assigned_at !== null) {
+      setStatus('taken');
+      onVinSelect(null);
+    } else {
+      setStatus('available');
+      onVinSelect(fullVin);
+    }
+  };
+
+  if (series === 'POLE_POSITION') return null;
+
+  const vinTextStyle = "font-brand font-black italic text-xl md:text-2xl tracking-tighter uppercase leading-none";
+
   return (
     <div className="p-6 bg-white/[0.02] border border-white/5 space-y-6">
       <div className="flex justify-between items-start">
-        <span className="text-[9px] font-mono text-zinc-600 uppercase tracking-widest">Permanent_VIN_Protocol</span>
-        {isNRG && <span className="text-[8px] bg-emerald-500/10 text-emerald-500 px-2 py-0.5 border border-emerald-500/20 uppercase font-mono tracking-tighter">Personalization_Active</span>}
+        <div className="flex flex-col gap-1">
+          <span className="text-[9px] font-mono text-zinc-600 uppercase tracking-widest">Permanent_VIN_Protocol</span>
+          
+          {/* Status widoczny tylko przy ręcznym wpisywaniu (NRG) */}
+          {isNRG && status !== 'idle' && (
+            <span className={`text-[7px] font-mono uppercase tracking-widest ${status === 'available' ? 'text-emerald-500' : 'text-[#ff133a]'}`}>
+              {status === 'checking' ? 'SYS_VERIFYING...' : status === 'available' ? 'UNIT_AVAILABLE' : 'UNIT_TERMINATED'}
+            </span>
+          )}
+        </div>
+        
+        {isNRG && (
+          <span className="text-[8px] bg-emerald-500/10 text-emerald-500 px-2 py-0.5 border border-emerald-500/20 uppercase font-mono italic font-bold tracking-widest animate-pulse">
+            NRG_CUSTOM_SLOT_ACTIVE
+          </span>
+        )}
       </div>
 
-      <div className="flex flex-wrap items-center font-brand font-black italic text-xl md:text-2xl tracking-tighter">
-        <span className="opacity-20">{baseVin}</span>
+      <div className="flex items-baseline">
+        <span className={`${vinTextStyle} opacity-20`}>{baseVin}-</span>
+        
         {isNRG ? (
           <input 
+            type="text"
             maxLength={2} 
-            className="w-12 bg-transparent border-b border-vizia-red text-vizia-red outline-none text-center ml-1 uppercase"
+            value={unitSlot}
+            onChange={(e) => {
+              const val = e.target.value.replace(/\D/g, '');
+              setUnitSlot(val);
+              checkVinAvailability(val);
+            }}
+            className={`
+              ${vinTextStyle} 
+              w-[1.8em] 
+              bg-transparent 
+              border-b-2
+              border-x-0
+              border-t-0
+              ${status === 'taken' ? 'border-[#ff133a] text-[#ff133a]' : 'border-white text-white'} 
+              outline-none 
+              text-center 
+              p-0 
+              m-0 
+              ml-1
+              transition-all
+              duration-300
+              placeholder:text-zinc-900
+              appearance-none
+              focus:ring-0
+            `}
             placeholder="XX"
           />
         ) : (
-          <span className="text-white ml-1 animate-pulse">XX</span>
+          <span className={`${vinTextStyle} text-white ml-1 animate-pulse`}>
+            {autoVin ? autoVin.split('-').pop() : '??'}
+          </span>
         )}
       </div>
 
       {!isNRG && (
-        <div className="pt-4 border-t border-white/5 space-y-4">
+        <div className="pt-4 border-t border-white/5">
           <p className="text-[10px] font-mono text-zinc-500 uppercase leading-tight">
-             Jako gość otrzymasz <span className="text-white">losowy numer VIN</span>. <br/>
-             Zapisz się do NRG, aby wybrać własny sufiks.
+             STATUS: <span className={autoVin ? "text-white" : "text-red-500"}>
+               {autoVin ? `UNIT_${autoVin.split('-').pop()}_ALLOCATED` : 'NO_UNITS_AVAILABLE'}
+             </span>
           </p>
-          <div className="flex gap-2">
-             <Input label="JOIN_NRG" placeholder="Enter Email" />
-             <div className="flex items-end pb-0.5"><Button size="sm">Join</Button></div>
-          </div>
         </div>
       )}
     </div>
