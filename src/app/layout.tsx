@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react"
 import localFont from 'next/font/local'
-import Script from 'next/script'
 import "../styles/globals.css"
 import { Header } from "../components/layout/Header"
 import { Footer } from "../components/layout/Footer"
@@ -20,7 +19,7 @@ const zalando = localFont({
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const [isCartOpen, setIsCartOpen] = useState(false)
 
-  // FORCE UNLOCK: Naprawa blokad scrolla i dotyku po zamknięciu koszyka
+  // Naprawa blokad scrolla i dotyku po zamknięciu koszyka (Hydration-safe)
   useEffect(() => {
     const unlockTouch = () => {
       if (!isCartOpen) {
@@ -48,11 +47,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="pl" className={zalando.variable} suppressHydrationWarning>
       <head>
-        {/* Krytyczne: Style dla mapy InPost GeoWidget */}
-        <link 
-          rel="stylesheet" 
-          href="https://geowidget.inpost.pl/sdk/for-javascript/lib/geowidget.min.css" 
-        />
+        {/* Usunięto zewnętrzne zależności InPost, które powodowały błędy 404 */}
       </head>
       <body className="bg-vizia-black text-white antialiased pointer-events-auto">
         <NRGProvider>
@@ -72,8 +67,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               isOpen={isCartOpen} 
               onClose={() => setIsCartOpen(false)} 
             />
-            
-            {/* Skrypt InPost ładowany po interakcji, aby nie blokować hydration */}
             
           </CartProvider>
         </NRGProvider>

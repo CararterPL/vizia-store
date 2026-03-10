@@ -1,0 +1,34 @@
+/* InPost Geowidget Basic Layout Fix */
+#easypack-geowidget {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    background-color: #000; /* Dopasowanie do Twojego czarnego tła */
+    min-height: 500px;
+}
+
+#easypack-iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    display: block;
+}
+
+/* Ukrycie domyślnych pasków przewijania jeśli iframe by je generował */
+.inpost-widget-container {
+    overflow: hidden;
+}
+
+/* Stylizacja scrollbara dla kontenerów InPostu (jeśli się pojawią) */
+::-webkit-scrollbar {
+    width: 5px;
+}
+::-webkit-scrollbar-track {
+    background: #111;
+}
+::-webkit-scrollbar-thumb {
+    background: #333;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
