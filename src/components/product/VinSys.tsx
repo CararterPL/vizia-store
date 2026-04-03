@@ -4,19 +4,40 @@ import { supabase } from '../../lib/supabase'
 
 interface VinSystemProps {
   isGridMember: boolean;
-  series: string;    // np. "SHDWRC"
+  series: string;     // np. "SHDWRC"
   modelCode: string; // np. "BRBG801"
   type: string;      // np. "TS"
   unitSlot: string;
   setUnitSlot: (val: string) => void;
   onJoinGrid: () => void;
-  productId: string; // Musi być przekazane z page.tsx!
+  productId: string; 
 }
 
 export const VinSystem = ({ 
   isGridMember, series, modelCode, type, unitSlot, setUnitSlot, onJoinGrid, productId 
 }: VinSystemProps) => {
   const [status, setStatus] = useState<'idle' | 'checking' | 'available' | 'taken'>('idle');
+
+  // FUNKCJA ZAPISUJĄCA REZERWACJĘ W SUPABASE
+  const reserveVinSlot = async (fullVin: string) => {
+    // Obliczamy czas wygaśnięcia: teraz + 15 minut
+    const expiryDate = new Date();
+    expiryDate.setMinutes(expiryDate.getMinutes() + 15);
+
+    const { error } = await supabase
+      .from('vin_pool')
+      .update({ 
+        reserved_until: expiryDate.toISOString(),
+        // Opcjonalnie: przypisz ID sesji, jeśli je śledzisz
+        // reserved_by_session: 'user_session_id' 
+      })
+      .eq('vin_full', fullVin)
+      .eq('is_sold', false);
+
+    if (error) {
+      console.error("VIZIA_PROTOCOL_ERROR: LOCK_FAILED", error);
+    }
+  };
 
   const checkAvailability = async (val: string) => {
     if (val.length !== 2) {
@@ -26,10 +47,10 @@ export const VinSystem = ({
 
     setStatus('checking');
     
-    // Budujemy VIN dokładnie tak jak w bazie: SHDWRC-BRBG801TS-XX
-    // Sprawdź czy base_vin w bazie ma myślnik na końcu!
+    // Budujemy pełny VIN zgodnie z Twoim schematem
     const fullVin = `${series}-${modelCode}${type}-${val}`;
 
+    // Pobieramy dane z tabeli vin_pool
     const { data, error } = await supabase
       .from('vin_pool')
       .select('is_sold, reserved_until')
@@ -42,12 +63,16 @@ export const VinSystem = ({
       return;
     }
 
-    const isReserved = data.reserved_until && new Date(data.reserved_until) > new Date();
+    // SPRAWDZENIE: Czy rezerwacja jeszcze trwa?
+    const now = new Date();
+    const isReserved = data.reserved_until && new Date(data.reserved_until) > now;
 
     if (data.is_sold || isReserved) {
       setStatus('taken');
     } else {
       setStatus('available');
+      // JEŚLI WOLNY: Natychmiastowa rezerwacja na 15 min
+      await reserveVinSlot(fullVin);
     }
   };
 
@@ -59,17 +84,15 @@ export const VinSystem = ({
     }
   }, [unitSlot, isGridMember]);
 
-  // Kolory dla statusu (HUD w prawym górnym rogu)
   const getStatusTextColor = () => {
-    if (status === 'available') return 'text-green-500';
+    if (status === 'available') return 'text-emerald-500';
     if (status === 'taken') return 'text-[#ff133a]';
     return 'text-zinc-500';
   };
 
-  // Kolor dla samego numeru w inpucie
   const getInputTextColor = () => {
-    if (status === 'available') return 'text-white'; // Wolny - biały (pasuje do reszty)
-    if (status === 'taken') return 'text-[#ff133a]'; // Zajęty - czerwony
+    if (status === 'available') return 'text-white'; 
+    if (status === 'taken') return 'text-[#ff133a]'; 
     return 'text-zinc-400';
   };
 
@@ -82,20 +105,17 @@ export const VinSystem = ({
             Personalizacja slotu jednostki zarezerwowana dla <br/>
             <span className="text-white italic font-bold underline decoration-[#ff133a]">THE NIGHT RUN GRID</span>.
           </p>
-          <div className="flex w-full max-w-xs gap-2">
-            <input type="email" placeholder="ENTER_EMAIL" className="flex-1 bg-black border border-white/10 p-3 text-[10px] font-mono focus:border-[#ff133a] outline-none transition-colors text-white" />
-            <button onClick={onJoinGrid} className="bg-white text-black px-6 py-2 text-[9px] font-black uppercase hover:bg-[#ff133a] hover:text-white transition-all duration-300">Join</button>
-          </div>
+          <button onClick={onJoinGrid} className="bg-white text-black px-6 py-2 text-[9px] font-black uppercase hover:bg-[#ff133a] hover:text-white transition-all duration-300">Join_Grid</button>
         </div>
       )}
 
       <div className="flex justify-between items-center mb-10">
-        <p className="text-[9px] font-bold tracking-[0.4em] uppercase text-[#ff133a] italic font-mono">02 // Custom_VIN_Slot</p>
+        <p className="text-[9px] font-bold tracking-[0.4em] uppercase text-[#ff133a] italic font-mono">02 // UNIT_RESERVATION_SYS</p>
         {status !== 'idle' && (
-          <span className={`text-[7px] font-mono uppercase tracking-[0.2em] ${getStatusTextColor()}`}>
-            {status === 'checking' && 'SYS_VERIFYING...'}
-            {status === 'available' && 'STATUS: AVAILABLE'}
-            {status === 'taken' && 'STATUS: TERMINATED'}
+          <span className={`text-[7px] font-mono uppercase tracking-[0.2em] px-2 py-1 border border-current ${getStatusTextColor()}`}>
+            {status === 'checking' && 'SCANNING_POOL...'}
+            {status === 'available' && 'LOCKED_FOR_15_MIN'}
+            {status === 'taken' && 'SLOT_UNAVAILABLE'}
           </span>
         )}
       </div>
@@ -105,7 +125,6 @@ export const VinSystem = ({
           <span>Series</span><span>Model_ID</span><span>Type</span><span className="text-[#ff133a]">Unit_Slot</span>
         </div>
         
-        {/* Kontener z VINem */}
         <div className="flex items-center bg-black border border-white/5 p-6 shadow-inner">
           <div className="flex items-center gap-0 font-mono text-lg font-bold tracking-tight">
             <span className="text-zinc-600 uppercase">{series}-</span>
@@ -119,11 +138,19 @@ export const VinSystem = ({
               onChange={(e) => setUnitSlot(e.target.value.replace(/\D/g, ''))} 
               placeholder="XX" 
               disabled={!isGridMember}
-              // Zmieniony font: teraz text-lg i font-bold, aby pasował do reszty VINu
               className={`bg-transparent outline-none w-10 text-lg font-bold font-mono transition-colors placeholder:text-zinc-900 uppercase ml-1 ${getInputTextColor()}`} 
             />
           </div>
         </div>
+        
+        {status === 'available' && (
+          <div className="mt-4 flex items-center gap-2">
+            <div className="w-1 h-1 bg-emerald-500 animate-ping"></div>
+            <p className="text-[7px] text-emerald-500/70 tracking-[0.2em] uppercase font-mono">
+              System zabezpieczył Twój numer. Masz 15 minut na finalizację zamówienia.
+            </p>
+          </div>
+        )}
       </div>
     </div>
   )
