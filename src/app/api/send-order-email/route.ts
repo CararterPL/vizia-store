@@ -95,7 +95,7 @@ export async function POST(req: Request) {
     `;
 
     await resend.emails.send({
-      from: 'VIZIA Store <zamowienia@viziawear.com>',
+      from: 'VIZIA Store <zamowienia@send.viziawear.com>',
       to: PRINTER_EMAIL,
       subject: `🏎️ Nowe zamówienie — ${items.map((i: any) => i.vin).join(', ')}`,
       html,
