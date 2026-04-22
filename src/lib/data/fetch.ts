@@ -8,7 +8,7 @@ import {
   HeroBannerData,
   MidBannerData,
   VariantColorData,
-} from 'types/strapi'
+} from '../../types/strapi'
 
 export const fetchStrapiClient = async (
   endpoint: string,
