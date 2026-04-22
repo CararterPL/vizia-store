@@ -35,7 +35,7 @@ export const SectionHeader = ({
 
       {/* OPIS: Opcjonalny, z limitowaną szerokością dla czytelności */}
       {description && (
-        <p className={`max-w-2xl text-zinc-500 text-sm md:text-base leading-relaxed ${isCenter ? 'mx-auto' : ''}`}>
+        <p className={`max-w-2xl text-zinc-300 text-sm md:text-base leading-relaxed ${isCenter ? 'mx-auto' : ''}`}>
           {description}
         </p>
       )}

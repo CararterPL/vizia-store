@@ -19,7 +19,7 @@ export const NRGOverlay = () => {
           <h2 className="text-3xl font-brand font-black italic text-white uppercase tracking-tighter">
             Hideout Access Granted
           </h2>
-          <p className="text-zinc-500 font-mono text-[9px] leading-relaxed uppercase tracking-widest">
+          <p className="text-zinc-300 font-mono text-[9px] leading-relaxed uppercase tracking-widest">
             Nawiązano połączenie z zastrzeżonymi jednostkami serii V-HIDEOUT. 
             Dostęp ograniczony czasowo.
           </p>

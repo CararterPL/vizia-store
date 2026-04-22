@@ -21,7 +21,7 @@ export const DesignerStory = () => {
             <div className="relative aspect-[4/5] bg-zinc-900 border border-white/10 overflow-hidden group">
               <Image 
                 src="/images/vince_portrait.jpg" 
-                alt="Vince - Founder of Vizia Lab" 
+                alt="Vince Carson- Founder of Vizia" 
                 fill 
                 className="object-cover grayscale group-hover:grayscale-0 transition-all duration-1000 group-hover:scale-105"
               />
@@ -32,7 +32,7 @@ export const DesignerStory = () => {
               {/* Techniczny tag pływający */}
               <div className="absolute bottom-8 left-8 right-8 flex justify-between items-end">
                 <div className="bg-vizia-red text-white font-brand font-black italic px-5 py-3 text-sm tracking-widest shadow-2xl">
-                  DESIGNER // VINCE_LAB
+                  DESIGNER // VINCE_CARSON
                 </div>
                 <div className="hidden md:block text-right">
                   <p className="text-[8px] font-mono text-zinc-400 uppercase tracking-widest leading-none">Build_Reference</p>
@@ -49,19 +49,19 @@ export const DesignerStory = () => {
           <div className="lg:col-span-7 space-y-12">
             <div className="space-y-6">
               <SectionHeader 
-                tagline="CORE_STORY // GENESIS"
-                title="Historia to paliwo"
-                description="Vizia Lab nie powstała w biurze projektowym. Powstała w oparach benzyny, wśród iskier szlifierki i setek godzin spędzonych na dopracowywaniu detali, które dla innych nie miały znaczenia."
+                tagline="// CREATOR_ORIGIN"
+                title="VINCE CARSON. DESIGN TO INSTYNKT"
+                description="VIZIA nie potrzebuje dorobionej filozofii. Ma historię spisaną projektami. Za sterami stoi Vince Carson – petrolhead i artysta, dla którego granica między arkuszem blachy a płótnem nigdy nie istniała."
                 align="left"
                 className="!mb-0"
               />
               
               <div className="space-y-6 text-zinc-400 font-light leading-relaxed text-lg max-w-2xl">
                 <p>
-                  Od pierwszych szkiców w garażu, po globalne uznanie i zwycięstwo w <span className="text-white font-bold italic">Hot Wheels Legends Tour</span>. Każdy drop, który wypuszczamy, jest fizycznym zapisem tej drogi.
+                  Od lat buduje markę Cararter, projektuje brandingi, tworzy wizualizacje ekstremalnych modyfikacji i unikalne oklejenia, które definiują polską scenę tuningową - <span className="text-white font-bold">Dub It, GoinWide, Fast Cartel</span>. W jego żyłach płynie mieszanka wysokooktanowego paliwa i farby.
                 </p>
                 <p>
-                  Nie interesuje nas masowa produkcja. Interesuje nas moment, w którym zakładasz naszą rzecz i czujesz, że stoi za nią autentyczna, inżynierska pasja. To odzież dla tych, którzy wiedzą, że <span className="text-vizia-red uppercase font-bold tracking-widest">detal to wszystko</span>.
+                  Szczytowy punkt? <span className="text-white font-bold">Zwycięstwo w globalnym finale Hot Wheels Legends Tour 2025</span>. To Vince, ramię w ramię z Pawłem, przekuł koncepcję w legendę. Maluch, który podbił świat, to efekt jego wizji, modyfikacji i projektu oklejenia, który sam Jay Leno uznał za absolutny majstersztyk.
                 </p>
               </div>
             </div>
@@ -71,7 +71,7 @@ export const DesignerStory = () => {
               <div className="absolute top-0 left-0 w-1 h-full bg-vizia-red"></div>
               <div className="pl-10 py-4">
                 <p className="text-white italic text-2xl md:text-3xl font-brand font-light leading-snug tracking-tight">
-                  "To jest właśnie to, o co chodzi w pasji do aut. Prostota, charakter i wykonanie, którego nie da się zignorować."
+                  "Jest idealny! I ten ogrom pracy, żeby stworzyć takie grafiki. Wyglądają świetnie. Gdyby była tu choć jedna więcej, powiedziałbym, że to przesada."
                 </p>
                 
                 <div className="flex items-center gap-4 mt-8">
@@ -80,8 +80,8 @@ export const DesignerStory = () => {
                     <span className="text-white font-brand font-black italic uppercase tracking-widest text-sm">
                       Jay Leno
                     </span>
-                    <span className="text-data text-[9px] text-zinc-600 uppercase tracking-[0.3em]">
-                      External_Validation // TV_Host_&_Collector
+                    <span className="text-data text-[9px] text-zinc-400 uppercase tracking-[0.3em]">
+                      Hot Wheels Legends Tour 2025 Global Final
                     </span>
                   </div>
                 </div>
@@ -91,12 +91,12 @@ export const DesignerStory = () => {
             {/* Dolne metadane sekcji */}
             <div className="pt-12 flex gap-12 border-t border-white/5">
               <div>
-                <span className="block text-[8px] font-mono text-zinc-600 uppercase mb-1 tracking-widest">Philosophy</span>
+                <span className="block text-[8px] font-mono text-zinc-400 uppercase mb-1 tracking-widest">Philosophy</span>
                 <span className="text-[10px] text-zinc-400 font-mono uppercase">Form_Follows_Function</span>
               </div>
               <div>
-                <span className="block text-[8px] font-mono text-zinc-600 uppercase mb-1 tracking-widest">Location</span>
-                <span className="text-[10px] text-zinc-400 font-mono uppercase">Vizia_Lab_Warsaw</span>
+                <span className="block text-[8px] font-mono text-zinc-400 uppercase mb-1 tracking-widest">Location</span>
+                <span className="text-[10px] text-zinc-400 font-mono uppercase">Poland</span>
               </div>
             </div>
           </div>

@@ -34,8 +34,8 @@ export const ProductInfo = ({ product, isNRG = false }: any) => {
 
   const handleAddToCart = async () => {
     setUiMessage(null);
-    if (!selectedSize) { setUiMessage({ type: 'error', text: 'REQUIRED_ACTION: SELECT_SIZE_PROTO' }); return; }
-    if (!selectedVin) { setUiMessage({ type: 'error', text: 'SYSTEM_ERROR: VIN_NOT_ALLOCATED' }); return; }
+    if (!selectedSize) { setUiMessage({ type: 'error', text: 'SYSTEM_ERROR: WYBIERZ_ROZMIAR' }); return; }
+    if (!selectedVin) { setUiMessage({ type: 'error', text: 'SYSTEM_ERROR: VIN_NIE_WYBRANY' }); return; }
 
     setIsReserving(true);
     const cleanVin = selectedVin.trim().toUpperCase();
@@ -94,7 +94,7 @@ export const ProductInfo = ({ product, isNRG = false }: any) => {
           <p className="font-brand italic font-black text-2xl text-white uppercase tracking-tighter">
             {isPreRelease ? 'Coming Soon' : 'Classics Garage'}
           </p>
-          <p className="text-[10px] font-mono text-zinc-500 uppercase mt-2">NRG Subscribers Only</p>
+          <p className="text-[10px] font-mono text-zinc-300 uppercase mt-2">NRG Subscribers Only</p>
         </div>
       )}
 

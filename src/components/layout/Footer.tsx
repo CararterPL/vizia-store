@@ -18,9 +18,8 @@ export const Footer = () => {
         <div className="flex flex-col lg:flex-row justify-between items-start gap-16 mb-24">
           <div className="max-w-sm">
             <Logo className="h-6 md:h-7 w-auto text-white mb-8 transition-colors hover:text-vizia-red" />
-            <p className="text-zinc-500 lowercase font-sans text-sm leading-relaxed">
-              Autentyczność, technologia i motoryzacyjny puryzm. <br/>
-              Vizia Technical Apparel – projektowane w Polsce, testowane na asfalcie.
+            <p className="text-zinc-300 font-sans text-sm leading-relaxed">
+              VIZIA Wear for night run. Designed by Vince Carson. Powered by Automotive Culture. Ściśle limitowane serie. Raz na zawsze.
             </p>
           </div>
 
@@ -49,7 +48,7 @@ export const Footer = () => {
                 JOIN_NRG
               </Button>
             </div>
-            <p className="font-mono text-[8px] text-zinc-600 uppercase tracking-widest leading-relaxed">
+            <p className="font-mono text-[8px] text-zinc-400 uppercase tracking-widest leading-relaxed">
               * Zapisując się do sieci NRG, zyskujesz pierwszeństwo przy rezerwacji limitowanych serii oraz dostęp do modeli w fazie "The Hideout".
             </p>
           </div>
@@ -59,7 +58,7 @@ export const Footer = () => {
         <div className="grid grid-cols-2 md:grid-cols-4 gap-12 mb-16 border-y border-white/5 py-12">
           <div className="space-y-6">
             <h5 className="text-vizia-red text-[10px] font-mono uppercase tracking-[0.3em] font-black italic">System_//</h5>
-            <ul className="list-none p-0 space-y-3 font-mono text-[11px] uppercase tracking-widest text-zinc-500">
+            <ul className="list-none p-0 space-y-3 font-mono text-[11px] uppercase tracking-widest text-zinc-300">
               <li><Link href="/#products" className="hover:text-white transition-colors">Kolekcja</Link></li>
               <li><Link href="/custom" className="hover:text-white transition-colors">Custom Division</Link></li>
               <li><Link href="/archive" className="hover:text-white transition-colors">Archiwum</Link></li>
@@ -68,9 +67,9 @@ export const Footer = () => {
 
           <div className="space-y-6">
             <h5 className="text-vizia-red text-[10px] font-mono uppercase tracking-[0.3em] font-black italic">Social_//</h5>
-            <ul className="list-none p-0 space-y-3 font-mono text-[11px] uppercase tracking-widest text-zinc-500">
-              <li><a href="#" className="hover:text-white transition-colors">Instagram</a></li>
-              <li><a href="#" className="hover:text-white transition-colors">Facebook</a></li>
+            <ul className="list-none p-0 space-y-3 font-mono text-[11px] uppercase tracking-widest text-zinc-300">
+              <li><a href="https://www.instagram.com/vizia_wear/" className="hover:text-white transition-colors" target='_blank'>Instagram</a></li>
+              <li><a href="https://www.facebook.com/vizia.wear" className="hover:text-white transition-colors" target='_blank'>Facebook</a></li>
             </ul>
           </div>
 
@@ -79,23 +78,20 @@ export const Footer = () => {
             <p className="font-brand font-black italic uppercase tracking-tighter text-white text-xl hover:text-vizia-red transition-colors cursor-pointer">
               vince@cararter.pl
             </p>
-            <p className="font-mono text-[10px] text-zinc-600 uppercase tracking-widest">
-              Techniczne wsparcie: Mon-Fri 09:00 - 17:00
-            </p>
           </div>
         </div>
 
         {/* BOTTOM SECTION: LEGAL BAR */}
         <div className="flex flex-col md:flex-row justify-between items-center gap-6">
-          <div className="font-mono text-[9px] text-zinc-600 tracking-[0.2em] uppercase">
+          <div className="font-mono text-[9px] text-zinc-400 tracking-[0.2em] uppercase">
             © {currentYear} VIZIA WEAR // DESIGNED_FOR_DRIVERS // ALL RIGHTS RESERVED
           </div>
           
           <div className="flex gap-8">
-            <Link href="/privacy" className="font-mono text-[9px] text-zinc-600 hover:text-white transition-colors uppercase tracking-[0.2em]">
+            <Link href="/privacy" className="font-mono text-[9px] text-zinc-400 hover:text-white transition-colors uppercase tracking-[0.2em]">
               Polityka Prywatności
             </Link>
-            <Link href="/terms" className="font-mono text-[9px] text-zinc-600 hover:text-white transition-colors uppercase tracking-[0.2em]">
+            <Link href="/terms" className="font-mono text-[9px] text-zinc-400 hover:text-white transition-colors uppercase tracking-[0.2em]">
               Regulamin
             </Link>
           </div>

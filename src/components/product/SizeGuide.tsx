@@ -37,7 +37,7 @@ export const SizeGuide = ({ isOpen, onClose }: SizeGuideProps) => {
             <h4 className="font-brand font-black italic text-xl text-white uppercase tracking-tighter">
               Blueprint_Guide //
             </h4>
-            <p className="font-mono text-[8px] text-zinc-500 tracking-widest uppercase mt-1">
+            <p className="font-mono text-[8px] text-zinc-300 tracking-widest uppercase mt-1">
               Technical_Specifications_v1.0
             </p>
           </div>
@@ -55,10 +55,10 @@ export const SizeGuide = ({ isOpen, onClose }: SizeGuideProps) => {
             
             {/* Tabela rozmiarów */}
             <div className="grid grid-cols-4 border border-white/5 text-[10px] font-mono uppercase">
-              <div className="p-3 bg-white/5 text-zinc-500">Size</div>
-              <div className="p-3 bg-white/5 text-zinc-500">Chest</div>
-              <div className="p-3 bg-white/5 text-zinc-500">Length</div>
-              <div className="p-3 bg-white/5 text-zinc-500">Sleeve</div>
+              <div className="p-3 bg-white/5 text-zinc-300">Size</div>
+              <div className="p-3 bg-white/5 text-zinc-300">Chest</div>
+              <div className="p-3 bg-white/5 text-zinc-300">Length</div>
+              <div className="p-3 bg-white/5 text-zinc-300">Sleeve</div>
               
               {['S', 'M', 'L', 'XL', 'XXL'].map((s) => (
                 <React.Fragment key={s}>
@@ -75,7 +75,7 @@ export const SizeGuide = ({ isOpen, onClose }: SizeGuideProps) => {
               <h5 className="font-mono text-[9px] text-white tracking-widest uppercase border-l-2 border-amber-500 pl-3">
                 Measurement_Protocol:
               </h5>
-              <p className="font-mono text-[10px] text-zinc-500 leading-relaxed uppercase">
+              <p className="font-mono text-[10px] text-zinc-300 leading-relaxed uppercase">
                 1. Chest: Measure across the fullest part of your chest, keeping the tape horizontal.<br/>
                 2. Length: Measure from the highest point of the shoulder to the bottom hem.<br/>
                 3. Fit: Our Technical Apparel features a "Boxy Fit". If you prefer a tighter look, consider sizing down.

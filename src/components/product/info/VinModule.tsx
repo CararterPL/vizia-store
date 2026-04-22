@@ -71,19 +71,19 @@ export const VinModule = ({ series, baseVin, productId, onVinSelect }: any) => {
     <div className="p-6 bg-white/[0.02] border border-white/5 space-y-6">
       <div className="flex justify-between items-start">
         <div className="flex flex-col gap-1">
-          <span className="text-[9px] font-mono text-zinc-600 uppercase tracking-widest">Permanent_VIN_Protocol</span>
+          <span className="text-[9px] font-mono text-zinc-400 uppercase tracking-widest">TWÓJ NUMER VIN</span>
           
           {/* Status widoczny tylko przy ręcznym wpisywaniu (NRG) */}
           {isNRG && status !== 'idle' && (
             <span className={`text-[7px] font-mono uppercase tracking-widest ${status === 'available' ? 'text-emerald-500' : 'text-[#ff133a]'}`}>
-              {status === 'checking' ? 'SYS_VERIFYING...' : status === 'available' ? 'UNIT_AVAILABLE' : 'UNIT_TERMINATED'}
+              {status === 'checking' ? 'SYS_VERIFYING...' : status === 'available' ? 'VIN_DOSTĘPNY' : 'VIN_NIEDOSTĘPNY'}
             </span>
           )}
         </div>
         
         {isNRG && (
           <span className="text-[8px] bg-emerald-500/10 text-emerald-500 px-2 py-0.5 border border-emerald-500/20 uppercase font-mono italic font-bold tracking-widest animate-pulse">
-            NRG_CUSTOM_SLOT_ACTIVE
+            NRG_SUBSCRIBER_UNLOCKED
           </span>
         )}
       </div>
@@ -131,9 +131,9 @@ export const VinModule = ({ series, baseVin, productId, onVinSelect }: any) => {
 
       {!isNRG && (
         <div className="pt-4 border-t border-white/5">
-          <p className="text-[10px] font-mono text-zinc-500 uppercase leading-tight">
+          <p className="text-[10px] font-mono text-zinc-300 uppercase leading-tight">
              STATUS: <span className={autoVin ? "text-white" : "text-red-500"}>
-               {autoVin ? `UNIT_${autoVin.split('-').pop()}_ALLOCATED` : 'NO_UNITS_AVAILABLE'}
+               {autoVin ? `VIN_${autoVin.split('-').pop()}_DOSTĘPNY` : 'VIN_NIEDOSTĘPNY'}
              </span>
           </p>
         </div>

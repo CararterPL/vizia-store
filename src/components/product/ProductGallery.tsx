@@ -89,7 +89,7 @@ export const ProductGallery = ({ images: supabaseImages = [] }: ProductGalleryPr
   if (!isMounted || originalImages.length === 0) {
     return (
       <div className="w-full h-full bg-black flex items-center justify-center">
-        <span className="font-mono text-[8px] text-zinc-800 uppercase tracking-[0.5em] animate-pulse">
+        <span className="font-mono text-[8px] text-zinc-300 uppercase tracking-[0.5em] animate-pulse">
           Synchronizing_Assets...
         </span>
       </div>

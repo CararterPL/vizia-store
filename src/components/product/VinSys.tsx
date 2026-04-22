@@ -87,7 +87,7 @@ export const VinSystem = ({
   const getStatusTextColor = () => {
     if (status === 'available') return 'text-emerald-500';
     if (status === 'taken') return 'text-[#ff133a]';
-    return 'text-zinc-500';
+    return 'text-zinc-300';
   };
 
   const getInputTextColor = () => {
@@ -127,10 +127,10 @@ export const VinSystem = ({
         
         <div className="flex items-center bg-black border border-white/5 p-6 shadow-inner">
           <div className="flex items-center gap-0 font-mono text-lg font-bold tracking-tight">
-            <span className="text-zinc-600 uppercase">{series}-</span>
-            <span className="text-zinc-600 uppercase">{modelCode}</span>
+            <span className="text-zinc-400 uppercase">{series}-</span>
+            <span className="text-zinc-400 uppercase">{modelCode}</span>
             <span className="text-[#ff133a] italic uppercase">{type}</span>
-            <span className="text-zinc-600">-</span>
+            <span className="text-zinc-400">-</span>
             <input 
               type="text" 
               maxLength={2} 

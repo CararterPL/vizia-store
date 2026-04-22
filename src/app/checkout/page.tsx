@@ -267,7 +267,7 @@ function CheckoutContent() {
                 <span className="text-xs opacity-40 uppercase">Suma do zapłaty</span>
                 <span className="text-4xl font-bold">{finalTotal.toFixed(2)} PLN</span>
               </div>
-              <button onClick={handleCompleteOrder} disabled={loading} className={`w-full py-6 mt-10 text-xl font-bold transition-all ${loading ? 'bg-zinc-800 text-zinc-500 cursor-wait' : 'bg-white text-black hover:bg-[rgb(255,19,58)] hover:text-white'}`}>
+              <button onClick={handleCompleteOrder} disabled={loading} className={`w-full py-6 mt-10 text-xl font-bold transition-all ${loading ? 'bg-zinc-800 text-zinc-300 cursor-wait' : 'bg-white text-black hover:bg-[rgb(255,19,58)] hover:text-white'}`}>
                 {loading ? 'Przetwarzanie...' : 'Przejdź do płatności'}
               </button>
             </div>

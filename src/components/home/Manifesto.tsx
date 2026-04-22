@@ -33,13 +33,13 @@ export const Manifesto = () => {
               <div className="flex items-center gap-4 mb-6 md:mb-8">
                 <span className="text-vizia-red font-brand font-black italic text-3xl md:text-4xl">01</span>
                 <div className="h-px flex-grow bg-white/10" />
-                <span className="font-mono text-[8px] md:text-[10px] text-zinc-600 tracking-[0.2em] md:tracking-[0.3em] whitespace-nowrap">REF_ID: SC-99</span>
+                <span className="font-mono text-[8px] md:text-[10px] text-zinc-400 tracking-[0.2em] md:tracking-[0.3em] whitespace-nowrap">REF_ID: SC-99</span>
               </div>
               
               <h5 className="text-xl md:text-2xl mb-4 md:mb-6 tracking-[0.1em]">SCARCITY // SZTUKI</h5>
               <p className="text-zinc-400 text-sm md:text-lg leading-relaxed max-w-xl">
                 99 sztuk. To nie jest slogan, to nasza <span className="text-white font-bold">nieprzekraczalna granica</span>. 
-                Każdy projekt to zamknięty rozdział w historii brandu. Gdy licznik dobije do zera, protokół zostaje wyłączony.
+                Każdy projekt to zamknięty rozdział w historii. Gdy licznik dobije do zera, produkt znika na zawsze.
               </p>
             </div>
 
@@ -58,7 +58,7 @@ export const Manifesto = () => {
               <div className="flex items-center gap-4 mb-6 md:mb-8">
                 <span className="text-vizia-red font-brand font-black italic text-3xl md:text-4xl">02</span>
                 <div className="h-px flex-grow bg-white/10" />
-                <span className="font-mono text-[8px] md:text-[10px] text-zinc-600 tracking-[0.2em] md:tracking-[0.3em] whitespace-nowrap">REF_ID: TM-12</span>
+                <span className="font-mono text-[8px] md:text-[10px] text-zinc-400 tracking-[0.2em] md:tracking-[0.3em] whitespace-nowrap">REF_ID: TM-12</span>
               </div>
               
               <h5 className="text-xl md:text-2xl mb-4 md:mb-6 tracking-[0.1em]">TIME // OKNO DROPU</h5>

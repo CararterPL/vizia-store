@@ -70,12 +70,12 @@ export const ProductCard = ({
             {/* CENA I ZEGRARY NA JEDNEJ WYSOKOŚCI */}
             <div className="flex justify-between items-end h-14">
               <div className="flex flex-col">
-                <span className="text-[9px] font-mono text-zinc-600 uppercase tracking-widest mb-1">Status_Price</span>
+                <span className="text-[9px] font-mono text-zinc-400 uppercase tracking-widest mb-1">Status_Price</span>
                 {isPolePosition ? (
                    <div className="text-xl font-brand font-black italic text-zinc-700 uppercase">TBA</div>
                 ) : (
                   <div className="text-3xl font-brand font-black italic text-white leading-none">
-                    {price}<span className="text-xs text-zinc-500 not-italic ml-1 font-sans">PLN</span>
+                    {price}<span className="text-xs text-zinc-300 not-italic ml-1 font-sans">PLN</span>
                   </div>
                 )}
               </div>
@@ -89,7 +89,7 @@ export const ProductCard = ({
               {isPolePosition && (
                 <div className="text-right flex flex-col items-end pb-1">
                    <span className="text-[9px] font-mono text-vizia-red uppercase tracking-widest font-bold animate-pulse">Pending_Release</span>
-                   <span className="text-[10px] font-mono text-zinc-500 uppercase">{releaseDate}</span>
+                   <span className="text-[10px] font-mono text-zinc-300 uppercase">{releaseDate}</span>
                 </div>
               )}
             </div>
@@ -102,7 +102,7 @@ export const ProductCard = ({
                 Szczegóły
               </Button>
             ) : (
-              <div className="w-full border border-zinc-800 text-zinc-800 font-brand font-black italic text-center uppercase tracking-widest text-[10px] py-4">
+              <div className="w-full border border-zinc-800 text-zinc-300 font-brand font-black italic text-center uppercase tracking-widest text-[10px] py-4">
                 Coming_Soon_2026
               </div>
             )}

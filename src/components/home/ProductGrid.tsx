@@ -106,7 +106,7 @@ export const ProductGrid = () => {
   }, [isNRG, hideoutUnlocked]); // Reaguj na zmiany dostępu
 
   if (loading) return (
-    <div className="py-40 bg-vizia-black flex items-center justify-center font-mono text-[10px] text-zinc-800 tracking-widest uppercase animate-pulse">
+    <div className="py-40 bg-vizia-black flex items-center justify-center font-mono text-[10px] text-zinc-300 tracking-widest uppercase animate-pulse">
       Initialising_Secure_Link...
     </div>
   );
@@ -121,9 +121,13 @@ export const ProductGrid = () => {
             description={
               hideoutUnlocked 
                 ? "ACCESS_GRANTED: Wyświetlasz superlimitowaną linię Hideout oraz pełne archiwum VIZIA."
-                : (isNRG 
-                    ? "Pełny dostęp dla subskrybentów: Archiwum Classics Garage oraz nadchodzące premiery są aktywne."
-                    : "Aktywne jednostki produkcyjne. Modele archiwalne i przedpremierowe są widoczne wyłącznie dla subskrybentów NRG.")
+                : (            <span>
+              Sprawdź dostępne produkty. Modele archiwalne i przedpremierowe są widoczne wyłącznie dla subskrybentów{' '}
+              <a href="#nrg" className="text-[rgb(255,19,58)] hover:underline font-bold">
+                NRG - Night Run Grid
+              </a>.
+            </span>
+          )
             }
             align="left"
           />
@@ -140,7 +144,7 @@ export const ProductGrid = () => {
                   </div>
                 )}
                 {isNRG && product.isClassics && (
-                  <div className="bg-zinc-900/90 text-zinc-500 border border-white/10 px-2 py-1 font-mono text-[7px] uppercase tracking-widest">
+                  <div className="bg-zinc-900/90 text-zinc-300 border border-white/10 px-2 py-1 font-mono text-[7px] uppercase tracking-widest">
                     Classics_Garage
                   </div>
                 )}

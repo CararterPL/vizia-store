@@ -5,9 +5,9 @@ import { Button } from '../ui/Button';
 import { SectionHeader } from '../ui/SectionHeader';
 
 const nrgBenefits = [
-  { code: '01', title: 'Early Access', desc: 'Dostęp do dropu 2h wcześniej.' },
+  { code: '01', title: 'Early Access', desc: 'Dostęp do dropu 3 dni wcześniej.' },
   { code: '02', title: 'VIN Reserve', desc: 'Rezerwacja numeru seryjnego.' },
-  { code: '03', title: 'Hideout Entry', desc: 'Dostęp do ukrytej kategorii.' }
+  { code: '03', title: 'Hideout Entry', desc: 'Dostęp do ukrytych dropów.' }
 ];
 
 export const NightRunGrid = () => {
@@ -21,10 +21,10 @@ export const NightRunGrid = () => {
   };
 
   return (
-    <section className="py-24 md:py-40 bg-[#030303] border-t border-white/5 relative overflow-hidden">
+    <section className="py-24 md:py-40 bg-[#030303] border-t border-white/5 relative overflow-hidden" id="nrg">
       {/* Dekoracyjne tło XXL - wymuszone absolute-center dla bezpieczeństwa */}
       <div className="absolute right-0 top-0 font-brand font-black italic text-[25vw] text-white/[0.01] pointer-events-none select-none uppercase hidden md:block">
-        NRG_System
+        NRG_Subscription
       </div>
 
       {/* Kontener 1600px - na mobile px-0, żeby formularz i teksty miały całą szerokość */}
@@ -36,11 +36,11 @@ export const NightRunGrid = () => {
           <div className="lg:col-span-7 px-6 md:px-0 space-y-12">
             <div className="max-w-full">
               <SectionHeader 
-                tagline="AUTHENTICATION_REQUIRED"
+                tagline="SUBSCRIPTION_NRG." 
                 title="Night Run Grid"
                 // Wymuszamy łamanie linii przy zachowaniu gigantycznego rozmiaru
                 className="[&_h2]:break-words [&_h2]:whitespace-normal [&_h2]:leading-[0.85]"
-                description="Dołącz do elitarnego protokołu dystrybucji. To bezpośredni link do bazy danych Vizia Lab."
+                description="Dołącz do elitarnego grona. Zyskaj unikalne korzyści i dostęp do ekskluzywnych modeli."
                 align="left"
               />
             </div>
@@ -55,7 +55,7 @@ export const NightRunGrid = () => {
                   <h4 className="text-white font-brand font-black italic text-lg uppercase mb-2">
                     {benefit.title}
                   </h4>
-                  <p className="text-zinc-500 text-xs leading-relaxed font-mono uppercase tracking-tight">
+                  <p className="text-zinc-300 text-xs leading-relaxed font-mono uppercase tracking-tight">
                     {benefit.desc}
                   </p>
                 </div>
@@ -73,10 +73,10 @@ export const NightRunGrid = () => {
               >
                 <div className="space-y-4">
                   <div className="flex justify-between items-end">
-                    <label className="text-data text-[10px] text-zinc-600 tracking-widest uppercase italic">
-                      Identify_Email
+                    <label className="text-data text-[10px] text-zinc-400 tracking-widest uppercase italic">
+                      Drivers_Email
                     </label>
-                    <span className="hidden sm:block text-[8px] font-mono text-zinc-800">SECURE_AUTH</span>
+                    <span className="hidden sm:block text-[8px] font-mono text-zinc-300">AUTH</span>
                   </div>
                   <input 
                     type="email"
@@ -94,18 +94,18 @@ export const NightRunGrid = () => {
                   className="w-full py-8 text-xl font-black italic tracking-[0.2em]"
                   disabled={status === 'loading'}
                 >
-                  {status === 'loading' ? 'AUTH...' : 'JOIN_THE_GRID'}
+                  {status === 'loading' ? 'AUTH...' : 'Dołącz do NRG'}
                 </Button>
 
                 <p className="text-[9px] text-zinc-700 font-mono text-center uppercase tracking-widest">
-                  Encryption: Active // No_Spam_Protocol
+                  Encryption: Active // No_Spam
                 </p>
 
                 {/* Success Overlay */}
                 {status === 'success' && (
                   <div className="absolute inset-0 bg-black flex flex-col items-center justify-center p-6 text-center z-20">
-                    <h3 className="font-brand font-black italic text-3xl text-vizia-red mb-4 uppercase">Access_Granted</h3>
-                    <Button variant="ghost" onClick={() => setStatus('idle')}>Close</Button>
+                    <h3 className="font-brand font-black italic text-3xl text-vizia-red mb-4 uppercase">Dostęp przyznazny. Potwierdź konto.</h3>
+                    <Button variant="ghost" onClick={() => setStatus('idle')}>Zamknij</Button>
                   </div>
                 )}
               </form>

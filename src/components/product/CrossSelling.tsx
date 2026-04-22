@@ -13,7 +13,7 @@ const relatedProducts = [
 export const CrossSelling = () => {
   return (
     <section className="py-24 px-4 md:px-10 max-w-[1600px] mx-auto bg-black border-t border-white/5">
-      <h3 className="text-[10px] font-mono text-zinc-600 uppercase tracking-[0.5em] mb-12 italic ml-2">
+      <h3 className="text-[10px] font-mono text-zinc-400 uppercase tracking-[0.5em] mb-12 italic ml-2">
         // DEPLOYED_UNITS_GRID
       </h3>
       
@@ -29,7 +29,7 @@ export const CrossSelling = () => {
             <h4 className="text-2xl font-brand font-black italic text-white uppercase tracking-tighter leading-tight">
               PROJEKT DLA <br/> TWOJEJ EKIPY
             </h4>
-            <p className="text-[11px] font-mono text-zinc-500 uppercase leading-relaxed font-sans not-italic lowercase">
+            <p className="text-[11px] font-mono text-zinc-300 uppercase leading-relaxed font-sans not-italic lowercase">
               Tworzymy dedykowane wzory dla klubów samochodowych, grup i eventów.
             </p>
             <div className="bg-black/40 p-3 border border-white/5 space-y-2">

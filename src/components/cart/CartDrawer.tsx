@@ -49,10 +49,10 @@ export const CartDrawer = ({ isOpen, onClose }: { isOpen: boolean, onClose: () =
         <div className="flex flex-col h-full p-8 md:p-12">
           <div className="flex justify-between items-start mb-12">
             <div className="text-left">
-              <p className="text-[10px] text-vizia-red font-mono tracking-[0.3em] uppercase mb-2">Unit_Manifest</p>
-              <h2 className="text-3xl font-brand font-black italic text-white uppercase tracking-tighter text-left">Garaż</h2>
+              <p className="text-[10px] text-vizia-red font-mono tracking-[0.3em] uppercase mb-2">YOUR_APPAREL</p>
+              <h2 className="text-3xl font-brand font-black italic text-white uppercase tracking-tighter text-left">Bagażnik</h2>
             </div>
-            <button onClick={onClose} className="p-2 text-zinc-500 hover:text-white transition-colors">
+            <button onClick={onClose} className="p-2 text-zinc-300 hover:text-white transition-colors">
               <X size={24} strokeWidth={1} />
             </button>
           </div>
@@ -61,7 +61,7 @@ export const CartDrawer = ({ isOpen, onClose }: { isOpen: boolean, onClose: () =
             {items.length === 0 ? (
               <div className="h-full flex flex-col items-center justify-center opacity-20 text-center">
                 <ShoppingBag size={48} strokeWidth={0.5} className="mb-4 text-white" />
-                <p className="font-mono text-[10px] uppercase tracking-widest text-white text-left text-center w-full">Garaż_jest_pusty</p>
+                <p className="font-mono text-[10px] uppercase tracking-widest text-white text-left text-center w-full">Bagażnik jest pusty</p>
               </div>
             ) : (
               items.map((item) => (
@@ -89,11 +89,11 @@ export const CartDrawer = ({ isOpen, onClose }: { isOpen: boolean, onClose: () =
                       
                       <div className="mt-2 space-y-1.5">
                         <div className="flex items-center gap-2">
-                          <span className="text-[9px] text-zinc-500 font-mono uppercase">VIN:</span>
-                          <span className="text-[9px] text-vizia-red font-mono font-bold tracking-tighter bg-vizia-red/5 px-1 uppercase">{item.vin}</span>
+                          <span className="text-[12px] text-zinc-300 font-mono uppercase">VIN:</span>
+                          <span className="text-[12px] text-vizia-red font-mono font-bold tracking-tighter bg-vizia-red/5 px-1 uppercase">{item.vin}</span>
                         </div>
-                        <span className="inline-block text-[9px] text-zinc-400 uppercase tracking-widest border border-zinc-800 px-2 py-0.5 font-mono text-left">
-                          SIZE: {item.size}
+                        <span className="inline-block text-[12px] text-zinc-400 uppercase tracking-widest border border-zinc-800 px-2 py-0.5 font-mono text-left">
+                          Rozmiar: {item.size}
                         </span>
                       </div>
                     </div>
@@ -101,9 +101,9 @@ export const CartDrawer = ({ isOpen, onClose }: { isOpen: boolean, onClose: () =
                     <div className="flex justify-end items-center mt-4">
                       <button 
                         onClick={() => removeItem(item.id, item.size, item.vin)}
-                        className="text-[9px] text-zinc-600 uppercase tracking-widest hover:text-vizia-red transition-colors flex items-center gap-2 font-mono"
+                        className="text-[9px] text-zinc-400 uppercase tracking-widest hover:text-vizia-red transition-colors flex items-center gap-2 font-mono"
                       >
-                        <Trash2 size={12} /> Usuń_Z_Logów
+                        <Trash2 size={12} /> Usuń z bagażnika
                       </button>
                     </div>
                   </div>
@@ -117,7 +117,7 @@ export const CartDrawer = ({ isOpen, onClose }: { isOpen: boolean, onClose: () =
               <div className="space-y-4 mb-10">
                 <div className="flex justify-between items-end">
                   <div className="text-left">
-                    <span className="text-[10px] text-zinc-500 uppercase font-mono block mb-1 tracking-widest text-left">Suma_szacowana</span>
+                    <span className="text-[10px] text-zinc-300 uppercase font-mono block mb-1 tracking-widest text-left">Do zapłaty</span>
                     <span className="text-4xl font-brand font-black italic text-white tracking-tighter">{totalPrice} PLN</span>
                   </div>
                   

@@ -31,7 +31,7 @@ export const ProductFeatures = () => (
           <h4 className="text-xl font-brand font-black italic tracking-tighter text-white">
             {f.title}
           </h4>
-          <p className="text-zinc-500 text-[12px] leading-relaxed tracking-tight not-italic lowercase font-sans max-w-[300px]">
+          <p className="text-zinc-300 text-[12px] leading-relaxed tracking-tight not-italic lowercase font-sans max-w-[300px]">
             {f.desc}
           </p>
         </div>

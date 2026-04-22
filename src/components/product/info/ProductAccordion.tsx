@@ -11,7 +11,7 @@ export const ProductAccordion = () => {
           <span className="text-[10px] font-mono font-bold tracking-[0.2em] uppercase italic">
             01_Product_Brief //
           </span>
-          <span className="text-zinc-600 transition-transform duration-300 group-open:rotate-45">+</span>
+          <span className="text-zinc-400 transition-transform duration-300 group-open:rotate-45">+</span>
         </summary>
         <div className="pb-6 text-[13px] font-sans text-zinc-400 leading-relaxed lowercase tracking-tight">
           Interpretacja Shadow Race serii <span className="text-white">Mini JCW GP</span>. 
@@ -27,10 +27,10 @@ export const ProductAccordion = () => {
           <span className="text-[10px] font-mono font-bold tracking-[0.2em] uppercase italic">
             02_Technical_Specs //
           </span>
-          <span className="text-zinc-600 transition-transform duration-300 group-open:rotate-45">+</span>
+          <span className="text-zinc-400 transition-transform duration-300 group-open:rotate-45">+</span>
         </summary>
         <div className="pb-6">
-          <table className="w-full text-[11px] font-mono text-zinc-500 uppercase">
+          <table className="w-full text-[11px] font-mono text-zinc-300 uppercase">
             <tbody>
               <tr className="border-b border-white/5">
                 <td className="py-2.5 text-zinc-300 font-bold tracking-tighter">Material</td>
@@ -63,7 +63,7 @@ export const ProductAccordion = () => {
           <span className="text-[10px] font-mono font-bold tracking-[0.2em] uppercase italic">
             03_Logistics_&_Policy //
           </span>
-          <span className="text-zinc-600 transition-transform duration-300 group-open:rotate-45">+</span>
+          <span className="text-zinc-400 transition-transform duration-300 group-open:rotate-45">+</span>
         </summary>
         <div className="pb-6 space-y-4">
           <div className="text-[12px] font-sans text-zinc-400 leading-relaxed">

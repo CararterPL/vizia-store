@@ -44,7 +44,7 @@ export default function ViziaHome() {
             <h1 className="text-4xl font-extrabold italic tracking-tighter uppercase leading-none font-syne">
               VIZIA<span className="text-red-600">_</span>
             </h1>
-            <p className="text-[7px] tracking-[0.6em] text-zinc-500 uppercase font-bold mt-2">Kraków // Poland</p>
+            <p className="text-[7px] tracking-[0.6em] text-zinc-300 uppercase font-bold mt-2">Kraków // Poland</p>
           </div>
           <div className="flex gap-12 items-center text-[10px] tracking-widest uppercase font-bold">
             <span className="hover:text-red-600 cursor-pointer transition-colors">Kolekcje</span>
@@ -70,7 +70,7 @@ export default function ViziaHome() {
           </p>
         </div>
 
-        <div className="relative z-20 flex justify-between items-end border-t border-white/10 pt-8 text-[8px] text-zinc-600 tracking-[0.5em] uppercase">
+        <div className="relative z-20 flex justify-between items-end border-t border-white/10 pt-8 text-[8px] text-zinc-400 tracking-[0.5em] uppercase">
           <p>System Status: Operacyjny</p>
           <p className="text-white font-bold italic">© 2026 VIZIA_LAB</p>
         </div>
@@ -87,12 +87,12 @@ export default function ViziaHome() {
                       <span className="text-[12vw] font-black italic uppercase font-syne">{car.id}</span>
                    </div>
                    <div className="absolute inset-0 flex items-center justify-center z-10">
-                      <p className="text-zinc-800 text-6xl font-black italic group-hover:text-white transition-all duration-1000 group-hover:drop-shadow-[0_0_20px_rgba(220,38,38,0.3)] font-syne">
+                      <p className="text-zinc-300 text-6xl font-black italic group-hover:text-white transition-all duration-1000 group-hover:drop-shadow-[0_0_20px_rgba(220,38,38,0.3)] font-syne">
                         {car.id}_UNIT
                       </p>
                    </div>
                    <div className="absolute top-6 left-6 z-20 bg-black/80 backdrop-blur-md px-4 py-2 border-l border-red-600">
-                      <p className="text-[8px] text-zinc-500 tracking-widest uppercase mb-1">Dostępność</p>
+                      <p className="text-[8px] text-zinc-300 tracking-widest uppercase mb-1">Dostępność</p>
                       <p className="text-xs font-bold italic">{car.left} / 99</p>
                    </div>
                    <div className="absolute inset-0 z-30 opacity-0 group-hover:opacity-100 transition-all duration-500 flex items-center justify-center">
@@ -104,9 +104,9 @@ export default function ViziaHome() {
                 <div className="p-8 flex justify-between items-center bg-black border-t border-white/5">
                   <div>
                     <h4 className="text-3xl font-extrabold italic uppercase tracking-tighter group-hover:text-red-600 transition-colors font-syne">{car.name}</h4>
-                    <p className="text-[8px] text-zinc-600 tracking-[0.4em] uppercase font-bold mt-2">Seria 001 // Projekt: {car.color}</p>
+                    <p className="text-[8px] text-zinc-400 tracking-[0.4em] uppercase font-bold mt-2">Seria 001 // Projekt: {car.color}</p>
                   </div>
-                  <p className="text-3xl font-light italic text-zinc-200 tracking-tighter font-syne">
+                  <p className="text-3xl font-light italic text-zinc-300 tracking-tighter font-syne">
                     259<span className="text-xs ml-1 text-red-600 font-bold uppercase">pln</span>
                   </p>
                 </div>
@@ -123,7 +123,7 @@ export default function ViziaHome() {
             <h3 className="text-6xl md:text-8xl font-black italic uppercase tracking-tighter leading-[0.85] font-syne">
               Inżynieria <br /> <span className="text-red-600">Tekstyliów.</span>
             </h3>
-            <p className="text-xs md:text-sm text-zinc-500 uppercase tracking-[0.3em] font-bold italic leading-loose self-end font-mono">
+            <p className="text-xs md:text-sm text-zinc-300 uppercase tracking-[0.3em] font-bold italic leading-loose self-end font-mono">
               VIZIA to nie odzież reklamowa. To precyzyjnie zaprojektowane jednostki, stworzone do przetrwania setek nocnych przejazdów i intensywnej eksploatacji.
             </p>
           </div>
@@ -136,7 +136,7 @@ export default function ViziaHome() {
             ].map((spec, i) => (
               <div key={i} className="border-l-4 border-black pl-8 group">
                 <h5 className="text-2xl font-black italic uppercase mb-4 group-hover:text-red-600 transition-colors font-syne">{spec.t}</h5>
-                <p className="text-[10px] text-zinc-600 uppercase tracking-widest leading-relaxed font-bold font-mono">{spec.d}</p>
+                <p className="text-[10px] text-zinc-400 uppercase tracking-widest leading-relaxed font-bold font-mono">{spec.d}</p>
               </div>
             ))}
           </div>
@@ -164,7 +164,7 @@ export default function ViziaHome() {
       </section>
 
       {/* --- FOOTER --- */}
-      <footer className="relative z-10 py-20 px-6 md:px-10 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-8 text-[8px] tracking-[0.5em] text-zinc-600 uppercase font-bold">
+      <footer className="relative z-10 py-20 px-6 md:px-10 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-8 text-[8px] tracking-[0.5em] text-zinc-400 uppercase font-bold">
         <p>VIZIA LAB // KRAKÓW // POLSKA</p>
         <div className="flex gap-10">
           <span className="hover:text-red-600 cursor-pointer transition-colors">Regulamin</span>

@@ -31,13 +31,13 @@ export const CustomDivision = () => {
             <div className="mt-12 md:mt-16 flex flex-col md:flex-row items-start md:items-center gap-8 md:gap-12">
               <a href="mailto:vince@vizia-lab.com?subject=Custom Division Inquiry" className="w-full md:w-auto">
                 <Button variant="primary" size="lg" className="w-full md:w-auto px-8 md:px-16 py-7 md:py-8 text-lg md:text-xl font-black italic">
-                  Napisz do nas // Start
+                  Napisz do nas
                 </Button>
               </a>
 
               <div className="flex flex-col gap-1 pl-1 md:pl-0">
-                <span className="text-[10px] text-zinc-600 uppercase tracking-[0.3em] font-bold">Project_Lead</span>
-                <p className="text-white font-mono text-sm tracking-tight italic">vince@vizia-lab.com</p>
+                <span className="text-[10px] text-zinc-400 uppercase tracking-[0.3em] font-bold">Vince Carson</span>
+                <p className="text-white font-mono text-sm tracking-tight italic">vince@cararter.pl</p>
               </div>
             </div>
           </div>
@@ -46,10 +46,10 @@ export const CustomDivision = () => {
           {/* Na mobile usuwamy border-x i puszczamy gap-px na całą szerokość */}
           <div className="lg:col-span-5 w-full grid grid-cols-1 gap-px bg-white/5 border-y md:border border-white/5 shadow-2xl">
             {[
-              { label: 'Minimum_Order', value: '10 Units', detail: 'Low volume' },
-              { label: 'Turnaround', value: '3-4 Weeks', detail: 'End-to-end' },
-              { label: 'DNA_Options', value: 'Personalized VIN', detail: 'Unique serial' },
-              { label: 'Quality_Grade', value: 'High GSM', detail: 'Lab Tested' }
+              { label: 'Minimumalne zamówienie', value: '10 Sztuk', detail: 'Low volume' },
+              { label: 'Czas realizacji', value: '3-4 tygodnie', detail: 'End-to-end' },
+              { label: 'DNA_Options', value: 'Personalizowany VIN', detail: 'Unique serial' },
+              { label: 'Jakość', value: 'Premium', detail: 'Lab Tested' }
             ].map((stat, i) => (
               <div key={i} className="bg-zinc-950 p-6 md:p-8 group hover:bg-zinc-900 transition-colors">
                 <div className="flex justify-between items-center gap-4">
@@ -77,15 +77,13 @@ export const CustomDivision = () => {
               <span className="w-3 h-3 bg-vizia-red animate-pulse"></span>
               <span className="w-3 h-3 bg-zinc-800"></span>
             </div>
-            <p className="text-[10px] md:text-[11px] text-zinc-500 uppercase tracking-[0.2em] font-bold">
+            <p className="text-[10px] md:text-[11px] text-zinc-300 uppercase tracking-[0.2em] font-bold">
               Current_Capacity: <span className="text-white">2 Slots Monthly</span>
             </p>
           </div>
 
           <div className="flex flex-wrap justify-center gap-6 md:gap-8 text-[8px] md:text-[9px] text-zinc-700 font-mono uppercase tracking-[0.2em]">
             <span>Verified_Service</span>
-            <span className="hidden sm:inline">Worldwide_Shipping</span>
-            <span>Est_2024</span>
           </div>
         </div>
       </div>

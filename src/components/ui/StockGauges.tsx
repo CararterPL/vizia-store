@@ -49,7 +49,7 @@ const ArchGauge = ({ value, max, label }: { value: number, max: number, label: s
           <span className={`font-brand font-black italic text-[14px] tracking-tighter transition-colors duration-500 ${textStyle}`}>
             {value.toString().padStart(2, '0')}
           </span>
-          <span className="font-mono text-[6px] text-zinc-500 uppercase font-bold tracking-tight">
+          <span className="font-mono text-[6px] text-zinc-300 uppercase font-bold tracking-tight">
             {label}
           </span>
         </div>

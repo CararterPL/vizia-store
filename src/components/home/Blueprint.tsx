@@ -7,25 +7,25 @@ const specData = [
   {
     id: '01',
     title: 'MATERIAŁ',
-    items: ['Ciężka bawełna czesana', 'Gramatura High GSM', 'Standard Deep Black', 'Odporność na deformację'],
-    status: 'OPTIMIZED'
+    items: ['Ciężka bawełna czesana', 'Gramatura 220 gsm', 'Certyfikowana bawełna organiczna', 'Odporność na deformację'],
+    status: 'BASE'
   },
   {
     id: '02',
     title: 'LUMITRACE™',
-    items: ['Elementy odblaskowe', 'Nocna sygnatura', 'Dyskretne w dzień', 'Trwałość przemysłowa'],
+    items: ['Elementy odblaskowe', 'Nocna sygnatura', 'Czarna tkanina', 'Unikatowy design'],
     status: 'ACTIVE'
   },
   {
     id: '03',
     title: 'WYKOŃCZENIE',
-    items: ['Miks Flex / Flock', 'Nadruk 3D strukturalny', 'Certyfikat papierowy', 'Metki satynowe'],
+    items: ['Flex / Flock', 'Nadruk 3D strukturalny', 'Certyfikat papierowy', 'Wysoka jakość'],
     status: 'CERTIFIED'
   },
   {
     id: '04',
     title: 'TOŻSAMOŚĆ',
-    items: ['Unikalny numer VIN', 'Limit 99 egzemplarzy', 'Brak re-edycji', 'Logowanie NRG'],
+    items: ['Unikalny numer VIN', 'Limit 99 egzemplarzy', 'Brak re-edycji', 'NRG Extras'],
     status: 'ENFORCED'
   }
 ];
@@ -47,7 +47,7 @@ export const Blueprint = () => {
         
         <div className="mb-20">
           <SectionHeader 
-            tagline="SPEC_SHEET_v1.0 // SYSTEM_ARCHITECTURE"
+            tagline="SPEC_SHEET"
             title="Blueprint"
             description="Pełna dokumentacja techniczna serii produkcyjnej. Wszystkie parametry konstrukcyjne i materiałowe zostały zwalidowane w warunkach drogowych przed wdrożeniem do produkcji."
             align="left"
@@ -69,12 +69,12 @@ export const Blueprint = () => {
               {/* Header Karty */}
               <div className="flex justify-between items-start mb-16 relative z-10">
                 <div className="flex flex-col">
-                  <span className="font-brand font-black italic text-4xl text-zinc-800 group-hover:text-vizia-red transition-colors duration-500">
+                  <span className="font-brand font-black italic text-4xl text-zinc-300 group-hover:text-vizia-red transition-colors duration-500">
                     {spec.id}
                   </span>
                   <div className="w-8 h-1 bg-vizia-red mt-2 scale-x-0 group-hover:scale-x-100 transition-transform origin-left duration-500"></div>
                 </div>
-                <span className="font-mono text-[9px] text-zinc-600 tracking-[0.2em] pt-2">
+                <span className="font-mono text-[9px] text-zinc-400 tracking-[0.2em] pt-2">
                   ID // {spec.status}
                 </span>
               </div>
@@ -87,7 +87,7 @@ export const Blueprint = () => {
                 
                 <ul className="space-y-5">
                   {spec.items.map((item, idx) => (
-                    <li key={idx} className="flex items-center gap-4 text-zinc-500 group-hover:text-zinc-300 transition-colors">
+                    <li key={idx} className="flex items-center gap-4 text-zinc-300 group-hover:text-zinc-300 transition-colors">
                       <div className="w-1.5 h-1.5 rounded-full border border-vizia-red/30 group-hover:bg-vizia-red transition-all"></div>
                       <span className="text-[12px] font-mono uppercase tracking-wider leading-none">
                         {item}
@@ -111,11 +111,10 @@ export const Blueprint = () => {
 
         {/* DOLNE DANE SYSTEMOWE */}
         <div className="mt-16 flex flex-col md:flex-row justify-between items-center gap-8 border-b border-white/5 pb-8">
-          <div className="flex gap-12 text-data text-[10px] tracking-[0.3em] text-zinc-600 uppercase italic">
+          <div className="flex gap-12 text-data text-[10px] tracking-[0.3em] text-zinc-400 uppercase italic">
             <span>Core_Engine: Vizia_v1</span>
-            <span className="hidden sm:inline">Build: 2026.04</span>
           </div>
-          <div className="text-data text-[10px] tracking-[0.3em] text-zinc-500 uppercase">
+          <div className="text-data text-[10px] tracking-[0.3em] text-zinc-300 uppercase">
             Designed_for_Performance // <span className="text-vizia-red">Vizia_Lab</span>
           </div>
         </div>

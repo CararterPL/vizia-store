@@ -66,18 +66,18 @@ export const ProductHeader = ({ product }: any) => {
             </span>
           )}
         </div>
-        <h2 className="text-[10px] font-mono text-zinc-500 tracking-[0.4em] uppercase">
+        <h2 className="text-[10px] font-mono text-zinc-300 tracking-[0.4em] uppercase">
           Series: {product?.series?.replace('_', ' ') || "PROTOCOL_UNDEFINED"}
         </h2>
       </div>
 
       <div className="flex justify-between items-end border-t border-white/5 pt-6">
         <div className="flex flex-col text-left">
-          <span className="text-[9px] font-mono text-zinc-600 uppercase tracking-widest mb-1 font-bold">
-            Unit_Price:
+          <span className="text-[9px] font-mono text-zinc-400 uppercase tracking-widest mb-1 font-bold">
+            CENA:
           </span>
           <div className="text-4xl font-brand font-black italic text-white tracking-tighter">
-            {product?.price || "---"} <span className="text-sm text-zinc-600 not-italic font-bold tracking-normal uppercase font-sans">PLN</span>
+            {product?.price || "---"} <span className="text-sm text-zinc-400 not-italic font-bold tracking-normal uppercase font-sans">PLN</span>
           </div>
         </div>
 

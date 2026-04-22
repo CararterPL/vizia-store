@@ -55,7 +55,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
   }, [resolvedParams.id]);
 
   if (loading) return (
-    <div className="min-h-screen bg-black flex items-center justify-center font-mono text-[10px] tracking-widest text-zinc-800 uppercase">
+    <div className="min-h-screen bg-black flex items-center justify-center font-mono text-[10px] tracking-widest text-zinc-300 uppercase">
       Initialising_Visual_Stream...
     </div>
   );
