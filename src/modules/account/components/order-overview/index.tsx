@@ -4,7 +4,7 @@ import { Heading } from '@modules/common/components/heading'
 import { Text } from '@modules/common/components/text'
 import { BoxIcon } from '@modules/common/icons'
 import { Pagination } from '@modules/store/components/pagination'
-import { ORDERS_LIMIT } from 'app/[countryCode]/(main)/account/@dashboard/orders/page'
+import { ORDERS_LIMIT } from '../../../../app/[countryCode]/(main)/account/@dashboard/orders/page'
 
 import OrderCard from '../order-card'
 
