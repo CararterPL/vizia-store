@@ -11,9 +11,6 @@ const supabase = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
 
-// WAŻNE: wyłącz parsowanie body przez Next.js – Stripe wymaga raw body
-export const config = { api: { bodyParser: false } };
-
 export async function POST(req: Request) {
   const body = await req.text();
   const sig = req.headers.get('stripe-signature')!;
