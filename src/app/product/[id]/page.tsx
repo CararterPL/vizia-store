@@ -91,7 +91,8 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
                 remaining: 34,
                 daysLeft: 14,
                 baseVin: product.base_vin,
-                dropDate: product.created_at
+                dropDate: product.created_at,
+                description: product.description 
               }} 
               isNRG={isNRG} 
             />
@@ -100,7 +101,7 @@ export default function ProductPage({ params }: { params: Promise<{ id: string }
       </div>
 
       <ProductFeatures />
-      <CrossSelling />
+      <CrossSelling currentProductId={resolvedParams.id} />
 
       <footer className="bg-black py-12 px-6 border-t border-white/5 text-center">
         <span className="text-[8px] font-mono text-zinc-900 uppercase tracking-[0.5em]">VIZIA WEAR // 2026</span>

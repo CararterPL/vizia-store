@@ -3,7 +3,7 @@ import React from 'react';
 interface SectionHeaderProps {
   tagline: string;
   title: string;
-  description?: string;
+  description?: string | React.ReactNode;
   className?: string;
   align?: 'left' | 'center';
 }

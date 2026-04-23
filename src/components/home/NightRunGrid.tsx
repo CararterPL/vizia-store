@@ -14,11 +14,28 @@ export const NightRunGrid = () => {
   const [email, setEmail] = useState('');
   const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setStatus('loading');
-    setTimeout(() => setStatus('success'), 1500); 
-  };
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  if (!email) return;
+  setStatus('loading');
+
+  try {
+    const res = await fetch('/api/newsletter', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email }),
+    });
+
+    if (res.ok) {
+      setStatus('success');
+      setEmail('');
+    } else {
+      setStatus('error');
+    }
+  } catch {
+    setStatus('error');
+  }
+};
 
   return (
     <section className="py-24 md:py-40 bg-[#030303] border-t border-white/5 relative overflow-hidden" id="nrg">
@@ -108,6 +125,16 @@ export const NightRunGrid = () => {
                     <Button variant="ghost" onClick={() => setStatus('idle')}>Zamknij</Button>
                   </div>
                 )}
+
+                {status === 'error' && (
+                  <div className="p-4 border border-vizia-red/30 bg-vizia-red/5 text-center">
+                    <p className="text-[11px] font-mono text-vizia-red uppercase tracking-widest">
+                      Błąd zapisu. Spróbuj ponownie.
+                    </p>
+                  </div>
+                )}
+
+
               </form>
             </div>
           </div>

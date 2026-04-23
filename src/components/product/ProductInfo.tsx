@@ -117,7 +117,7 @@ export const ProductInfo = ({ product, isNRG = false }: any) => {
           {isReserving ? 'SYNCHRONIZING...' : 'DODAJ DO GARAŻU'}
         </Button>
       </div>
-      <ProductAccordion />
+      <ProductAccordion description={product.description} />
     </div>
   );
 };

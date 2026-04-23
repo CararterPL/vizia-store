@@ -8,6 +8,23 @@ import { Button } from '../ui/Button';
 export const Footer = () => {
   const currentYear = new Date().getFullYear();
   const [email, setEmail] = useState('');
+  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+
+  const handleNRG = async () => {
+    if (!email) return;
+    setStatus('loading');
+    try {
+      const res = await fetch('/api/newsletter', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email }),
+      });
+      setStatus(res.ok ? 'success' : 'error');
+      if (res.ok) setEmail('');
+    } catch {
+      setStatus('error');
+    }
+  };
 
   return (
     <footer className="bg-vizia-black pt-24 pb-12 px-6 md:px-12 border-t border-white/5">
@@ -28,26 +45,45 @@ export const Footer = () => {
             <div className="flex items-center gap-3 mb-2">
               <span className="w-2 h-2 bg-vizia-red animate-pulse" />
               <h5 className="font-mono text-[10px] font-bold uppercase tracking-[0.3em] text-white italic">
-                NRG_Network_Subscription //
+                NRG_Subscription //
               </h5>
             </div>
-            <div className="flex flex-col sm:flex-row gap-2">
-              <input 
-                type="email" 
-                placeholder="ENTER_EMAIL_ADDRESS"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="flex-grow bg-zinc-900/50 border border-white/5 px-4 py-3 font-mono text-[11px] text-white focus:outline-none focus:border-vizia-red/50 transition-colors uppercase tracking-widest"
-              />
-              <Button 
-                variant="primary" 
-                size="md" 
-                className="whitespace-nowrap"
-                onClick={() => console.log('NRG Access Request:', email)}
-              >
-                JOIN_NRG
-              </Button>
-            </div>
+
+            {status === 'success' ? (
+              <div className="border border-vizia-red/30 bg-vizia-red/5 p-4">
+                <p className="text-[11px] font-mono text-vizia-red uppercase tracking-widest">
+                  Dostęp przyznany. Sprawdź skrzynkę.
+                </p>
+              </div>
+            ) : (
+              <>
+                <div className="flex flex-col sm:flex-row gap-2">
+                  <input
+                    type="email"
+                    placeholder="EMAIL_ADDRESS"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleNRG()}
+                    className="flex-grow bg-zinc-900/50 border border-white/5 px-4 py-3 font-mono text-[11px] text-white focus:outline-none focus:border-vizia-red/50 transition-colors uppercase tracking-widest"
+                  />
+                  <Button
+                    variant="primary"
+                    size="md"
+                    className="whitespace-nowrap"
+                    onClick={handleNRG}
+                    disabled={status === 'loading'}
+                  >
+                    {status === 'loading' ? 'AUTH...' : 'JOIN_NRG'}
+                  </Button>
+                </div>
+                {status === 'error' && (
+                  <p className="text-[10px] font-mono text-vizia-red uppercase tracking-widest">
+                    Błąd zapisu. Spróbuj ponownie.
+                  </p>
+                )}
+              </>
+            )}
+
             <p className="font-mono text-[8px] text-zinc-400 uppercase tracking-widest leading-relaxed">
               * Zapisując się do sieci NRG, zyskujesz pierwszeństwo przy rezerwacji limitowanych serii oraz dostęp do modeli w fazie "The Hideout".
             </p>

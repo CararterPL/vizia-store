@@ -1,37 +1,38 @@
 import { NextResponse } from 'next/server';
 
+const MAILERLITE_API_KEY = process.env.MAILERLITE_API_KEY!;
+const NRG_GROUP_ID = '168207050562602925';
+
 export async function POST(req: Request) {
-  const { email } = await req.json();
-
-  if (!email) {
-    return NextResponse.json({ error: 'Email is required' }, { status: 400 });
-  }
-
   try {
+    const { email } = await req.json();
+
+    if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
+      return NextResponse.json({ error: 'Niepoprawny adres e-mail' }, { status: 400 });
+    }
+
     const response = await fetch('https://connect.mailerlite.com/api/subscribers', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Accept': 'application/json',
-        'Authorization': `Bearer ${process.env.MAILERLITE_API_KEY}`,
+        'Authorization': `Bearer ${MAILERLITE_API_KEY}`,
       },
-      // TUTAJ DODAJEMY GRUPĘ:
-      body: JSON.stringify({ 
-        email: email,
-        groups: ['168207050562602925'] 
+      body: JSON.stringify({
+        email,
+        groups: [NRG_GROUP_ID],
       }),
     });
 
-    if (response.ok) {
-      return NextResponse.json({ success: true });
-    } else {
-      // Warto zalogować błąd z MailerLite, żeby widzieć co poszło nie tak
-      const errorData = await response.json();
-      console.error('MailerLite Error:', errorData);
-      return NextResponse.json({ error: 'Failed to subscribe' }, { status: 400 });
+    if (!response.ok) {
+      const err = await response.json();
+      console.error('MailerLite error:', err);
+      return NextResponse.json({ error: 'Błąd zapisu do listy' }, { status: 500 });
     }
-  } catch (error) {
-    console.error('Server Error:', error);
-    return NextResponse.json({ error: 'Internal server error' }, { status: 500 });
+
+    return NextResponse.json({ success: true });
+
+  } catch (err) {
+    console.error('Newsletter API error:', err);
+    return NextResponse.json({ error: 'Błąd serwera' }, { status: 500 });
   }
 }
