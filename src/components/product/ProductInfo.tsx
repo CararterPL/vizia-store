@@ -107,6 +107,13 @@ export const ProductInfo = ({ product, isNRG = false }: any) => {
           </div>
         )}
 
+        
+      <div className="pb-6 space-y-4">
+          <p className="text-[12px] font-sans text-zinc-400 leading-relaxed font-bold">
+           UWAGA! Zdjęcia są jedynie poglądowe. Finalny produkt może różnić się detalami. Każda koszulka jest ręcznie produkowana na zamówienie.
+          </p>
+      </div>
+
         <Button 
           variant="cta" 
           size="lg" 

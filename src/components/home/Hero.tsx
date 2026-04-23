@@ -71,13 +71,13 @@ export const Hero = () => {
               <p className="text-[8px] font-mono text-zinc-400 tracking-widest uppercase mb-1">Stock_Status</p>
               <div className="flex items-center gap-2">
                 <span className="w-1.5 h-1.5 rounded-full bg-vizia-red animate-pulse"></span>
-                <span className="font-brand font-black italic text-sm">LIVE_NOW</span>
+                <span className="font-brand font-black italic text-sm uppercase">Ready_to_Ride</span>
               </div>
             </div>
             
             <div>
-              <p className="text-[8px] font-mono text-zinc-400 tracking-widest uppercase mb-1">Fabric_Quality</p>
-              <p className="font-brand font-black italic text-sm text-zinc-400 uppercase">Heavy_Cotton_400G</p>
+              <p className="text-[8px] font-mono text-zinc-400 tracking-widest uppercase mb-1">Garage_Status</p>
+              <p className="font-brand font-black italic text-sm text-zinc-400 uppercase">4_MODELS</p>
             </div>
           </div>
 
