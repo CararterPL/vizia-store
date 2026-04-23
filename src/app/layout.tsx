@@ -17,11 +17,6 @@ const zalando = localFont({
   display: 'swap',
 })
 
-export const metadata = {
-  title: 'VIZIA WEAR | Premium Automotive Streetwear',
-  description: 'Unikalne kolekcje odzieży dla pasjonatów motoryzacji. For the Night Run.',
-}
-
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const [isCartOpen, setIsCartOpen] = useState(false)
 
@@ -52,9 +47,10 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
   return (
     <html lang="pl" className={zalando.variable} suppressHydrationWarning>
-      <head>
-        {/* Usunięto zewnętrzne zależności InPost, które powodowały błędy 404 */}
-      </head>
+    <head>
+      <title>VIZIAWEAR | Premium Automotive Streetwear</title>
+      <meta name="description" content="Unikalne kolekcje odzieży dla pasjonatów motoryzacji. For the Night Run." />
+    </head>
       <body className="bg-vizia-black text-white antialiased pointer-events-auto">
         <NRGProvider>
           <CartProvider>
