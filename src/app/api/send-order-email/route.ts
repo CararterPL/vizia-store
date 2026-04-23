@@ -3,7 +3,7 @@ import { Resend } from 'resend';
 
 const resend = new Resend(process.env.RESEND_API_KEY!);
 const PRINTER_EMAIL = 'biuro@vipermedia.pl';
-const COPY_EMAIL = 'vince@cararter.pl';
+const COPY_EMAIL = ['vince@cararter.pl', 'biuro@ihaft.pl'];
 
 export async function POST(req: Request) {
   try {

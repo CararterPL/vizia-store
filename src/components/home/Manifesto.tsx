@@ -5,7 +5,7 @@ import { SectionHeader } from '../ui/SectionHeader';
 
 export const Manifesto = () => {
   return (
-    <section className="py-24 md:py-56 px-6 relative overflow-hidden bg-vizia-black border-y border-white/5">
+    <section className="py-24 md:py-56 px-6 relative overflow-hidden bg-vizia-black border-y border-white/5" id="manifesto">
       {/* TŁO: Protokół */}
       <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 font-brand font-black italic text-[35vw] text-white/[0.01] select-none leading-none pointer-events-none tracking-tighter">
         PROTOCOL

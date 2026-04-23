@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, Suspense } from 'react';
-import { useCart } from '../../context/CartContext'; 
+import { useCart } from '../../context/CartContext';
 import { useSearchParams } from 'next/navigation';
 
 function CheckoutContent() {
@@ -32,7 +32,6 @@ function CheckoutContent() {
   const [selectedPoint, setSelectedPoint] = useState<any>(null);
 
   const finalTotal = totalPrice;
-  const viziaRed = "[rgb(255,19,58)]";
 
   useEffect(() => {
     if (!search || search.length < 3) return;
@@ -66,14 +65,12 @@ function CheckoutContent() {
     if (!buyerData.lastName) errs.lastName = "Pole wymagane";
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(buyerData.email)) errs.email = "Niepoprawny e-mail";
     if (!/^\d{9}$/.test(buyerData.phone.replace(/\s+/g, ''))) errs.phone = "Wymagane 9 cyfr";
-
     if (deliveryMethod === 'paczkomat' && !selectedPoint) errs.delivery = "Wybierz punkt odbioru";
     if (deliveryMethod === 'kurier') {
       if (!shippingAddress.street) errs.street = "Pole wymagane";
       if (!shippingAddress.city) errs.city = "Pole wymagane";
       if (!/^\d{2}-\d{3}$/.test(shippingAddress.zipCode)) errs.zipCode = "Format 00-000";
     }
-
     if (invoiceData.wantsInvoice) {
       if (!invoiceData.companyName) errs.companyName = "Pole wymagane";
       if (!/^\d{10}$/.test(invoiceData.nip.replace(/-/g, ''))) errs.nip = "Wymagane 10 cyfr";
@@ -81,7 +78,6 @@ function CheckoutContent() {
       if (!invoiceData.city) errs.invoiceCity = "Pole wymagane";
       if (!/^\d{2}-\d{3}$/.test(invoiceData.zipCode)) errs.invoiceZip = "Format 00-000";
     }
-
     setErrors(errs);
     return Object.keys(errs).length === 0;
   };
@@ -91,23 +87,17 @@ function CheckoutContent() {
       window.scrollTo({ top: 0, behavior: 'smooth' });
       return;
     }
-
     setLoading(true);
     try {
       const response = await fetch('/api/checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          items,
-          email: buyerData.email,
-          buyerData,
-          invoiceData,
-          deliveryMethod,
-          selectedPoint,
+          items, email: buyerData.email, buyerData, invoiceData,
+          deliveryMethod, selectedPoint,
           shippingAddress: deliveryMethod === 'kurier' ? shippingAddress : null
         }),
       });
-
       const data = await response.json();
       if (data.url) {
         window.location.href = data.url;
@@ -121,130 +111,221 @@ function CheckoutContent() {
     }
   };
 
+  const inputClass = (hasError: boolean) =>
+    `w-full bg-black border ${hasError ? 'border-[rgb(255,19,58)]' : 'border-white/10'} p-4 text-sm font-mono text-white outline-none focus:border-white/40 transition-colors placeholder:text-zinc-600 placeholder:uppercase placeholder:tracking-widest`;
+
+  const SectionLabel = ({ number, title }: { number: string, title: string }) => (
+    <div className="flex items-center gap-4 mb-6">
+      <span className="font-mono text-[10px] text-[rgb(255,19,58)] tracking-widest">{number}_</span>
+      <h2 className="font-mono text-[11px] uppercase tracking-[0.3em] text-white font-bold">{title}</h2>
+      <div className="flex-1 h-px bg-white/5" />
+    </div>
+  );
+
   return (
-    <div className="min-h-screen bg-black text-white px-4 md:px-10 pb-20 pt-[100px] font-sans tracking-tight">
+    <div className="min-h-screen bg-black text-white px-4 md:px-10 pb-20 pt-[100px] font-mono">
       <div className="max-w-7xl mx-auto">
-        <header className="mb-10 border-b border-white/10 pb-6">
-          <h1 className="text-4xl font-bold leading-none">Podsumowanie zamówienia</h1>
-          <p className={`text-${viziaRed} text-xs mt-2 uppercase tracking-widest`}>
-            {isNRG ? 'Protokół NRG Aktywny' : 'Bezpieczne połączenie'}
+
+        {/* HEADER */}
+        <header className="mb-16 pb-8 border-b border-white/5">
+          <p className="text-[10px] text-[rgb(255,19,58)] tracking-[0.4em] uppercase mb-3">
+            {isNRG ? '// NRG_PROTOCOL_ACTIVE' : '// SECURE_CHECKOUT'}
           </p>
+          <h1 className="font-brand font-black italic text-5xl md:text-6xl uppercase tracking-tighter text-white leading-none">
+            Zamówienie
+          </h1>
         </header>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
-          <div className="lg:col-span-7 space-y-12">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-16">
+          <div className="lg:col-span-7 space-y-16">
 
-            {/* SEKCJA 1: Dane nabywcy */}
-            <section className="space-y-6">
-              <h2 className="text-lg font-bold border-l-4 border-white pl-4">1. Dane nabywcy</h2>
-              <div className="grid grid-cols-2 gap-4">
+            {/* 01 DANE NABYWCY */}
+            <section>
+              <SectionLabel number="01" title="Dane nabywcy" />
+              <div className="grid grid-cols-2 gap-3">
                 <div className="flex flex-col gap-1">
-                  <input placeholder="Imię" value={buyerData.firstName} onChange={(e) => setBuyerData({...buyerData, firstName: e.target.value})} className={`bg-zinc-900 border ${errors.firstName ? 'border-red-500' : 'border-white/10'} p-4 text-sm outline-none focus:border-white transition-colors`} />
-                  {errors.firstName && <span className="text-[10px] text-red-500">{errors.firstName}</span>}
+                  <input placeholder="Imię" value={buyerData.firstName}
+                    onChange={(e) => setBuyerData({...buyerData, firstName: e.target.value})}
+                    className={inputClass(!!errors.firstName)} />
+                  {errors.firstName && <span className="text-[10px] text-[rgb(255,19,58)] tracking-widest">{errors.firstName}</span>}
                 </div>
                 <div className="flex flex-col gap-1">
-                  <input placeholder="Nazwisko" value={buyerData.lastName} onChange={(e) => setBuyerData({...buyerData, lastName: e.target.value})} className={`bg-zinc-900 border ${errors.lastName ? 'border-red-500' : 'border-white/10'} p-4 text-sm outline-none focus:border-white transition-colors`} />
-                  {errors.lastName && <span className="text-[10px] text-red-500">{errors.lastName}</span>}
+                  <input placeholder="Nazwisko" value={buyerData.lastName}
+                    onChange={(e) => setBuyerData({...buyerData, lastName: e.target.value})}
+                    className={inputClass(!!errors.lastName)} />
+                  {errors.lastName && <span className="text-[10px] text-[rgb(255,19,58)] tracking-widest">{errors.lastName}</span>}
                 </div>
                 <div className="col-span-2 flex flex-col gap-1">
-                  <input placeholder="E-mail" value={buyerData.email} onChange={(e) => setBuyerData({...buyerData, email: e.target.value})} className={`bg-zinc-900 border ${errors.email ? 'border-red-500' : 'border-white/10'} p-4 text-sm outline-none focus:border-white transition-colors`} />
-                  {errors.email && <span className="text-[10px] text-red-500">{errors.email}</span>}
+                  <input placeholder="E-mail" value={buyerData.email}
+                    onChange={(e) => setBuyerData({...buyerData, email: e.target.value})}
+                    className={inputClass(!!errors.email)} />
+                  {errors.email && <span className="text-[10px] text-[rgb(255,19,58)] tracking-widest">{errors.email}</span>}
                 </div>
                 <div className="col-span-2 flex flex-col gap-1">
-                  <input placeholder="Numer telefonu" value={buyerData.phone} onChange={(e) => setBuyerData({...buyerData, phone: e.target.value})} className={`bg-zinc-900 border ${errors.phone ? 'border-red-500' : 'border-white/10'} p-4 text-sm outline-none focus:border-white transition-colors`} />
-                  {errors.phone && <span className="text-[10px] text-red-500">{errors.phone}</span>}
+                  <input placeholder="Telefon (9 cyfr)" value={buyerData.phone}
+                    onChange={(e) => setBuyerData({...buyerData, phone: e.target.value})}
+                    className={inputClass(!!errors.phone)} />
+                  {errors.phone && <span className="text-[10px] text-[rgb(255,19,58)] tracking-widest">{errors.phone}</span>}
                 </div>
               </div>
             </section>
 
-            {/* SEKCJA 2: Faktura VAT */}
-            <section className="space-y-6">
-              <div className="border-l-4 border-white pl-4">
-                <h2 className="text-lg font-bold">2. Faktura VAT</h2>
+            {/* 02 FAKTURA VAT */}
+            <section>
+              <SectionLabel number="02" title="Faktura VAT" />
+              <div
+                onClick={() => setInvoiceData({...invoiceData, wantsInvoice: !invoiceData.wantsInvoice})}
+                className={`flex items-center gap-4 p-4 border cursor-pointer transition-colors ${invoiceData.wantsInvoice ? 'border-white/20 bg-white/[0.02]' : 'border-white/5 hover:border-white/10'}`}
+              >
+                <div className={`w-4 h-4 border flex items-center justify-center transition-colors shrink-0 ${invoiceData.wantsInvoice ? 'bg-white border-white' : 'border-white/20'}`}>
+                  {invoiceData.wantsInvoice && <span className="text-black text-[10px] font-bold leading-none">✓</span>}
+                </div>
+                <span className="text-[11px] uppercase tracking-widest text-white/70">Chcę otrzymać fakturę VAT</span>
               </div>
 
-              <label className="flex items-center gap-3 cursor-pointer group">
-                <div
-                  className={`w-5 h-5 border flex items-center justify-center transition-colors ${invoiceData.wantsInvoice ? 'bg-white border-white' : 'border-white/30 group-hover:border-white/60'}`}
-                  onClick={() => setInvoiceData({...invoiceData, wantsInvoice: !invoiceData.wantsInvoice})}
-                >
-                  {invoiceData.wantsInvoice && <span className="text-black text-xs font-bold">✓</span>}
-                </div>
-                <span className="text-sm text-white/70">Chcę otrzymać fakturę VAT</span>
-              </label>
-
               {invoiceData.wantsInvoice && (
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-3 mt-4">
                   <div className="col-span-2 flex flex-col gap-1">
-                    <input placeholder="Nazwa firmy" value={invoiceData.companyName} onChange={(e) => setInvoiceData({...invoiceData, companyName: e.target.value})} className={`bg-zinc-900 border ${errors.companyName ? 'border-red-500' : 'border-white/10'} p-4 text-sm outline-none focus:border-white`} />
-                    {errors.companyName && <span className="text-[10px] text-red-500">{errors.companyName}</span>}
+                    <input placeholder="Nazwa firmy" value={invoiceData.companyName}
+                      onChange={(e) => setInvoiceData({...invoiceData, companyName: e.target.value})}
+                      className={inputClass(!!errors.companyName)} />
+                    {errors.companyName && <span className="text-[10px] text-[rgb(255,19,58)] tracking-widest">{errors.companyName}</span>}
                   </div>
                   <div className="col-span-2 flex flex-col gap-1">
-                    <input placeholder="NIP (10 cyfr)" value={invoiceData.nip} onChange={(e) => setInvoiceData({...invoiceData, nip: e.target.value})} className={`bg-zinc-900 border ${errors.nip ? 'border-red-500' : 'border-white/10'} p-4 text-sm outline-none focus:border-white`} />
-                    {errors.nip && <span className="text-[10px] text-red-500">{errors.nip}</span>}
+                    <input placeholder="NIP (10 cyfr)" value={invoiceData.nip}
+                      onChange={(e) => setInvoiceData({...invoiceData, nip: e.target.value})}
+                      className={inputClass(!!errors.nip)} />
+                    {errors.nip && <span className="text-[10px] text-[rgb(255,19,58)] tracking-widest">{errors.nip}</span>}
                   </div>
                   <div className="col-span-2 flex flex-col gap-1">
-                    <input placeholder="Ulica i numer" value={invoiceData.street} onChange={(e) => setInvoiceData({...invoiceData, street: e.target.value})} className={`bg-zinc-900 border ${errors.invoiceStreet ? 'border-red-500' : 'border-white/10'} p-4 text-sm outline-none focus:border-white`} />
-                    {errors.invoiceStreet && <span className="text-[10px] text-red-500">{errors.invoiceStreet}</span>}
+                    <input placeholder="Ulica i numer" value={invoiceData.street}
+                      onChange={(e) => setInvoiceData({...invoiceData, street: e.target.value})}
+                      className={inputClass(!!errors.invoiceStreet)} />
+                    {errors.invoiceStreet && <span className="text-[10px] text-[rgb(255,19,58)] tracking-widest">{errors.invoiceStreet}</span>}
                   </div>
                   <div className="flex flex-col gap-1">
-                    <input placeholder="Kod pocztowy" value={invoiceData.zipCode} onChange={(e) => setInvoiceData({...invoiceData, zipCode: e.target.value})} className={`bg-zinc-900 border ${errors.invoiceZip ? 'border-red-500' : 'border-white/10'} p-4 text-sm outline-none focus:border-white`} />
-                    {errors.invoiceZip && <span className="text-[10px] text-red-500">{errors.invoiceZip}</span>}
+                    <input placeholder="Kod pocztowy" value={invoiceData.zipCode}
+                      onChange={(e) => setInvoiceData({...invoiceData, zipCode: e.target.value})}
+                      className={inputClass(!!errors.invoiceZip)} />
+                    {errors.invoiceZip && <span className="text-[10px] text-[rgb(255,19,58)] tracking-widest">{errors.invoiceZip}</span>}
                   </div>
                   <div className="flex flex-col gap-1">
-                    <input placeholder="Miasto" value={invoiceData.city} onChange={(e) => setInvoiceData({...invoiceData, city: e.target.value})} className={`bg-zinc-900 border ${errors.invoiceCity ? 'border-red-500' : 'border-white/10'} p-4 text-sm outline-none focus:border-white`} />
-                    {errors.invoiceCity && <span className="text-[10px] text-red-500">{errors.invoiceCity}</span>}
+                    <input placeholder="Miasto" value={invoiceData.city}
+                      onChange={(e) => setInvoiceData({...invoiceData, city: e.target.value})}
+                      className={inputClass(!!errors.invoiceCity)} />
+                    {errors.invoiceCity && <span className="text-[10px] text-[rgb(255,19,58)] tracking-widest">{errors.invoiceCity}</span>}
                   </div>
                 </div>
               )}
             </section>
 
-            {/* SEKCJA 3: Metoda dostawy */}
-            <section className="space-y-6">
-              <h2 className="text-lg font-bold border-l-4 border-white pl-4">3. Metoda dostawy</h2>
-              <div className="flex gap-4">
-                <button onClick={() => setDeliveryMethod('paczkomat')} className={`flex-1 p-4 border font-bold text-xs transition-colors ${deliveryMethod === 'paczkomat' ? 'bg-white text-black border-white' : 'border-white/10 hover:border-white/30'}`}>Paczkomat InPost</button>
-                <button onClick={() => setDeliveryMethod('kurier')} className={`flex-1 p-4 border font-bold text-xs transition-colors ${deliveryMethod === 'kurier' ? 'bg-white text-black border-white' : 'border-white/10 hover:border-white/30'}`}>Kurier Standard</button>
+            {/* 03 DOSTAWA */}
+            <section>
+              <SectionLabel number="03" title="Metoda dostawy" />
+
+              <div className="grid grid-cols-2 gap-3 mb-6">
+                {(['paczkomat', 'kurier'] as const).map((method) => (
+                  <button key={method} onClick={() => setDeliveryMethod(method)}
+                    className={`p-5 border text-left transition-all ${deliveryMethod === method ? 'border-white bg-white/[0.03]' : 'border-white/5 hover:border-white/20'}`}
+                  >
+                    <p className={`font-mono text-[10px] tracking-widest uppercase mb-1 ${deliveryMethod === method ? 'text-[rgb(255,19,58)]' : 'text-zinc-500'}`}>
+                      {method === 'paczkomat' ? 'InPost' : 'Kurier DPD'}
+                    </p>
+                    <p className={`font-mono text-sm font-bold uppercase ${deliveryMethod === method ? 'text-white' : 'text-zinc-400'}`}>
+                      {method === 'paczkomat' ? 'Paczkomat' : 'Dostawa kurierska'}
+                    </p>
+                    <p className="font-mono text-[10px] text-[rgb(255,19,58)] mt-2">W cenie — 0 PLN</p>
+                  </button>
+                ))}
               </div>
-              {errors.delivery && <span className="text-[10px] text-red-500">{errors.delivery}</span>}
+
+              {errors.delivery && <p className="text-[10px] text-[rgb(255,19,58)] tracking-widest mb-4">{errors.delivery}</p>}
 
               {deliveryMethod === 'kurier' ? (
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="flex flex-col gap-1">
-                    <input placeholder="Ulica i numer" value={shippingAddress.street} onChange={(e) => setShippingAddress({...shippingAddress, street: e.target.value})} className={`bg-zinc-900 border ${errors.street ? 'border-red-500' : 'border-white/10'} p-4 text-sm outline-none focus:border-white`} />
-                    {errors.street && <span className="text-[10px] text-red-500">{errors.street}</span>}
-                  </div>
-                  <div className="flex flex-col gap-1">
-                    <input placeholder="Kod pocztowy" value={shippingAddress.zipCode} onChange={(e) => setShippingAddress({...shippingAddress, zipCode: e.target.value})} className={`bg-zinc-900 border ${errors.zipCode ? 'border-red-500' : 'border-white/10'} p-4 text-sm outline-none focus:border-white`} />
-                    {errors.zipCode && <span className="text-[10px] text-red-500">{errors.zipCode}</span>}
-                  </div>
+                <div className="grid grid-cols-2 gap-3">
                   <div className="col-span-2 flex flex-col gap-1">
-                    <input placeholder="Miasto" value={shippingAddress.city} onChange={(e) => setShippingAddress({...shippingAddress, city: e.target.value})} className={`bg-zinc-900 border ${errors.city ? 'border-red-500' : 'border-white/10'} p-4 text-sm outline-none focus:border-white`} />
-                    {errors.city && <span className="text-[10px] text-red-500">{errors.city}</span>}
+                    <input placeholder="Ulica i numer" value={shippingAddress.street}
+                      onChange={(e) => setShippingAddress({...shippingAddress, street: e.target.value})}
+                      className={inputClass(!!errors.street)} />
+                    {errors.street && <span className="text-[10px] text-[rgb(255,19,58)] tracking-widest">{errors.street}</span>}
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <input placeholder="Kod pocztowy" value={shippingAddress.zipCode}
+                      onChange={(e) => setShippingAddress({...shippingAddress, zipCode: e.target.value})}
+                      className={inputClass(!!errors.zipCode)} />
+                    {errors.zipCode && <span className="text-[10px] text-[rgb(255,19,58)] tracking-widest">{errors.zipCode}</span>}
+                  </div>
+                  <div className="flex flex-col gap-1">
+                    <input placeholder="Miasto" value={shippingAddress.city}
+                      onChange={(e) => setShippingAddress({...shippingAddress, city: e.target.value})}
+                      className={inputClass(!!errors.city)} />
+                    {errors.city && <span className="text-[10px] text-[rgb(255,19,58)] tracking-widest">{errors.city}</span>}
                   </div>
                 </div>
               ) : (
                 <div className="space-y-4">
-                  <input placeholder="Wyszukaj miasto lub punkt..." value={search || ''} onChange={(e) => setSearch(e.target.value)} className="w-full bg-zinc-900 border border-white/20 p-4 text-sm outline-none focus:border-white" />
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div className="h-[350px] overflow-y-auto border border-white/10 bg-black p-2 space-y-2">
-                      {loadingPoints ? (
-                        <p className="text-xs p-4 animate-pulse">Szukam punktów...</p>
-                      ) : (
-                        points.map((p) => (
-                          <div key={p.name} onClick={() => setSelectedPoint(p)} className={`p-3 border cursor-pointer ${selectedPoint?.name === p.name ? `border-${viziaRed} bg-${viziaRed}/5` : 'border-white/5 hover:border-white/20'}`}>
-                            <p className={`text-xs font-bold text-${viziaRed}`}>{p.name}</p>
-                            <p className="text-[11px] opacity-70">{p.address_details.street}, {p.address_details.city}</p>
+                  <input
+                    placeholder="Wyszukaj miasto lub nazwę paczkomatu..."
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    className={inputClass(false)}
+                  />
+
+                  {(points.length > 0 || loadingPoints) && (
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                      {/* LISTA PUNKTÓW */}
+                      <div className="h-[360px] overflow-y-auto border border-white/5 bg-zinc-950 space-y-px">
+                        {loadingPoints ? (
+                          <div className="h-full flex items-center justify-center">
+                            <p className="text-[10px] font-mono text-zinc-600 uppercase tracking-widest animate-pulse">Szukam punktów...</p>
                           </div>
-                        ))
-                      )}
+                        ) : (
+                          points.map((p) => (
+                            <div
+                              key={p.name}
+                              onClick={() => setSelectedPoint(p)}
+                              className={`p-4 cursor-pointer transition-all border-l-2 ${
+                                selectedPoint?.name === p.name
+                                  ? 'border-l-[rgb(255,19,58)] bg-white/[0.03]'
+                                  : 'border-l-transparent hover:bg-white/[0.02] hover:border-l-white/20'
+                              }`}
+                            >
+                              <p className={`font-mono text-[11px] font-bold tracking-widest ${selectedPoint?.name === p.name ? 'text-[rgb(255,19,58)]' : 'text-white'}`}>
+                                {p.name}
+                              </p>
+                              <p className="font-mono text-[10px] text-zinc-500 mt-1">
+                                {p.address_details.street} {p.address_details.building_number}, {p.address_details.city}
+                              </p>
+                            </div>
+                          ))
+                        )}
+                      </div>
+
+                      {/* MAPA */}
+                      <div className="h-[360px] border border-white/5 overflow-hidden relative">
+                        {selectedPoint ? (
+                          <>
+                            <div className="absolute top-0 left-0 right-0 z-10 bg-black/80 backdrop-blur-sm px-4 py-3 border-b border-white/5">
+                              <p className="font-mono text-[10px] text-[rgb(255,19,58)] font-bold tracking-widest">{selectedPoint.name}</p>
+                              <p className="font-mono text-[10px] text-zinc-400 mt-0.5">
+                                {selectedPoint.address_details.street} {selectedPoint.address_details.building_number}, {selectedPoint.address_details.city}
+                              </p>
+                            </div>
+                            <iframe
+                              width="100%"
+                              height="100%"
+                              style={{ border: 0, filter: 'grayscale(100%) invert(90%) contrast(110%) brightness(0.9)' }}
+                              src={`https://www.openstreetmap.org/export/embed.html?bbox=${selectedPoint.location.longitude - 0.004}%2C${selectedPoint.location.latitude - 0.004}%2C${selectedPoint.location.longitude + 0.004}%2C${selectedPoint.location.latitude + 0.004}&layer=mapnik&marker=${selectedPoint.location.latitude}%2C${selectedPoint.location.longitude}`}
+                            />
+                          </>
+                        ) : (
+                          <div className="h-full flex items-center justify-center">
+                            <p className="font-mono text-[10px] text-zinc-700 uppercase tracking-widest">Wybierz punkt z listy</p>
+                          </div>
+                        )}
+                      </div>
                     </div>
-                    <div className="h-[350px] border border-white/10 bg-zinc-900 grayscale invert contrast-125">
-                      {selectedPoint && (
-                        <iframe width="100%" height="100%" style={{ border: 0 }} src={`https://www.openstreetmap.org/export/embed.html?bbox=${selectedPoint.location.longitude - 0.005}%2C${selectedPoint.location.latitude - 0.005}%2C${selectedPoint.location.longitude + 0.005}%2C${selectedPoint.location.latitude + 0.005}&layer=mapnik&marker=${selectedPoint.location.latitude}%2C${selectedPoint.location.longitude}`} />
-                      )}
-                    </div>
-                  </div>
+                  )}
                 </div>
               )}
             </section>
@@ -253,26 +334,59 @@ function CheckoutContent() {
 
           {/* PODSUMOWANIE */}
           <div className="lg:col-span-5">
-            <div className="bg-zinc-900 p-8 border border-white/10 sticky top-[100px]">
-              <h2 className="text-xl font-bold mb-8">Podsumowanie</h2>
-              <div className="space-y-4 mb-8">
+            <div className="border border-white/5 bg-zinc-950 sticky top-[100px]">
+
+              <div className="px-8 py-6 border-b border-white/5">
+                <p className="font-mono text-[10px] text-[rgb(255,19,58)] tracking-widest uppercase mb-1">Podsumowanie_</p>
+                <p className="font-mono text-[10px] text-zinc-600 uppercase tracking-widest">{items.length} {items.length === 1 ? 'pozycja' : 'pozycje'}</p>
+              </div>
+
+              <div className="px-8 py-6 space-y-4 border-b border-white/5">
                 {items.map((item, idx) => (
-                  <div key={idx} className="flex justify-between text-sm font-sans text-white/80">
-                    <span>{item.name}</span>
-                    <span className="text-white font-medium">{item.price.toFixed(2)} PLN</span>
+                  <div key={idx} className="flex justify-between items-start gap-4">
+                    <div>
+                      <p className="font-mono text-[11px] text-white uppercase tracking-tight">{item.name}</p>
+                      <p className="font-mono text-[10px] text-[rgb(255,19,58)] tracking-widest mt-0.5">VIN: {item.vin}</p>
+                      <p className="font-mono text-[10px] text-zinc-600 uppercase mt-0.5">Rozmiar: {item.size}</p>
+                    </div>
+                    <span className="font-mono text-sm text-white font-bold shrink-0">{item.price.toFixed(2)} PLN</span>
                   </div>
                 ))}
               </div>
-              <div className="mt-8 pt-8 border-t-2 border-white flex justify-between items-end">
-                <span className="text-xs opacity-40 uppercase">Suma do zapłaty</span>
-                <span className="text-4xl font-bold">{finalTotal.toFixed(2)} PLN</span>
+
+              <div className="px-8 py-6 border-b border-white/5">
+                <div className="flex justify-between items-center">
+                  <span className="font-mono text-[10px] text-zinc-500 uppercase tracking-widest">Dostawa</span>
+                  <span className="font-mono text-[11px] text-[rgb(255,19,58)]">W cenie</span>
+                </div>
               </div>
-              <button onClick={handleCompleteOrder} disabled={loading} className={`w-full py-6 mt-10 text-xl font-bold transition-all ${loading ? 'bg-zinc-800 text-zinc-300 cursor-wait' : 'bg-white text-black hover:bg-[rgb(255,19,58)] hover:text-white'}`}>
-                {loading ? 'Przetwarzanie...' : 'Przejdź do płatności'}
-              </button>
+
+              <div className="px-8 py-6 border-b border-white/5">
+                <div className="flex justify-between items-end">
+                  <span className="font-mono text-[10px] text-zinc-500 uppercase tracking-widest">Łącznie</span>
+                  <span className="font-brand font-black italic text-4xl text-white tracking-tighter">{finalTotal.toFixed(2)} <span className="text-2xl">PLN</span></span>
+                </div>
+              </div>
+
+              <div className="px-8 py-6">
+                <button
+                  onClick={handleCompleteOrder}
+                  disabled={loading}
+                  className={`w-full py-6 font-brand font-black italic text-xl uppercase tracking-widest transition-all ${
+                    loading
+                      ? 'bg-zinc-900 text-zinc-600 cursor-wait'
+                      : 'bg-white text-black hover:bg-[rgb(255,19,58)] hover:text-white'
+                  }`}
+                >
+                  {loading ? 'Przetwarzanie...' : 'Przejdź do płatności →'}
+                </button>
+                <p className="font-mono text-[9px] text-zinc-700 uppercase tracking-widest text-center mt-4">
+                  Płatność obsługiwana przez Stripe
+                </p>
+              </div>
+
             </div>
           </div>
-
         </div>
       </div>
     </div>
@@ -283,7 +397,7 @@ export default function CheckoutPage() {
   return (
     <Suspense fallback={
       <div className="min-h-screen bg-black text-white flex items-center justify-center">
-        <p className="animate-pulse tracking-widest uppercase text-xs">Inicjalizacja protokołu...</p>
+        <p className="animate-pulse font-mono tracking-widest uppercase text-xs text-zinc-600">Inicjalizacja_protokołu...</p>
       </div>
     }>
       <CheckoutContent />

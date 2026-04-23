@@ -5,7 +5,6 @@ import { useCart } from '../../context/CartContext';
 import { X, ShoppingBag, Trash2, ArrowRight } from 'lucide-react';
 import { Button } from '../ui/Button';
 import Link from 'next/link';
-import Image from 'next/image';
 import { supabase } from '../../lib/supabase';
 
 export const CartDrawer = ({ isOpen, onClose }: { isOpen: boolean, onClose: () => void }) => {
@@ -75,16 +74,10 @@ export const CartDrawer = ({ isOpen, onClose }: { isOpen: boolean, onClose: () =
                   <div className="relative w-28 h-32 bg-zinc-900 border border-white/5 overflow-hidden flex-shrink-0">
                     {/* KLUCZOWA ZMIANA: Dodany unikalny KEY i wymuszony priorytet ładowania */}
                     {itemImages[item.id] ? (
-                      <Image
-                        key={`${item.id}-image`} 
+                      <img
                         src={itemImages[item.id]}
                         alt={item.name}
-                        fill
-                        priority={true} // Wymusza natychmiastowe ładowanie
-                        loading="eager" // Wyłącza Lazy Loading (rozwiązuje LCP)
-                        unoptimized={true} // Pomija optymalizację Next.js, jeśli Supabase ma problemy z formatami
-                        sizes="112px"
-                        className="object-cover grayscale transition-all duration-700 group-hover:grayscale-0"
+                        className="w-full h-full object-cover grayscale transition-all duration-700 group-hover:grayscale-0"
                       />
                     ) : (
                       <div className="w-full h-full bg-zinc-950 animate-pulse flex items-center justify-center">

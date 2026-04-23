@@ -34,8 +34,8 @@ export const Header = ({ onCartClick }: HeaderProps) => {
           <Link href="/#products" className="font-bold uppercase tracking-widest text-zinc-400 hover:text-white text-[11px]">
             Kolekcja
           </Link>
-          <Link href="/#blueprint" className="font-bold uppercase tracking-widest text-zinc-400 hover:text-white text-[11px]">
-            Specyfikacja
+          <Link href="/#nrg" className="font-bold uppercase tracking-widest text-zinc-400 hover:text-white text-[11px]">
+            Night Run Grid
           </Link>
         </nav>
 

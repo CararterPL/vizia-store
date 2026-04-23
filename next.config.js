@@ -12,12 +12,13 @@ const nextConfig = {
   },
   
   images: {
-    unoptimized: true,
-    remotePatterns: [
-      { protocol: "http", hostname: "localhost" },
-      { protocol: "https", hostname: "medusa-server-testing.up.railway.app" },
-    ],
-  },
+  unoptimized: true,
+  remotePatterns: [
+    { protocol: "http", hostname: "localhost" },
+    { protocol: "https", hostname: "medusa-server-testing.up.railway.app" },
+    { protocol: "https", hostname: "offpxqdlvbwwaqhwfkuu.supabase.co" },
+  ],
+},
 }
 
 module.exports = nextConfig
