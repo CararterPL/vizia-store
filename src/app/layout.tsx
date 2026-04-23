@@ -17,6 +17,11 @@ const zalando = localFont({
   display: 'swap',
 })
 
+export const metadata = {
+  title: 'VIZIA WEAR | Premium Automotive Streetwear',
+  description: 'Unikalne kolekcje odzieży dla pasjonatów motoryzacji. For the Night Run.',
+}
+
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const [isCartOpen, setIsCartOpen] = useState(false)
 
