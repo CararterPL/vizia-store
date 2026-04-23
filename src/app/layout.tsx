@@ -50,6 +50,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <head>
       <title>VIZIAWEAR | Premium Automotive Streetwear</title>
       <meta name="description" content="Unikalne kolekcje odzieży dla pasjonatów motoryzacji. For the Night Run." />
+      <link rel="icon" href="/favicon.ico" />
     </head>
       <body className="bg-vizia-black text-white antialiased pointer-events-auto">
         <NRGProvider>
