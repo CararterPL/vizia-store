@@ -3,6 +3,7 @@
 import React, { useState, useEffect, Suspense } from 'react';
 import { useCart } from '../../context/CartContext';
 import { useSearchParams } from 'next/navigation';
+import Link from 'next/link';
 
 function CheckoutContent() {
   const { items, totalPrice } = useCart();
@@ -11,6 +12,7 @@ function CheckoutContent() {
 
   const [loading, setLoading] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [acceptTerms, setAcceptTerms] = useState(false); // DODANE
 
   const [buyerData, setBuyerData] = useState({
     firstName: '', lastName: '', email: '', phone: ''
@@ -66,11 +68,13 @@ function CheckoutContent() {
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(buyerData.email)) errs.email = "Niepoprawny e-mail";
     if (!/^\d{9}$/.test(buyerData.phone.replace(/\s+/g, ''))) errs.phone = "Wymagane 9 cyfr";
     if (deliveryMethod === 'paczkomat' && !selectedPoint) errs.delivery = "Wybierz punkt odbioru";
+    
     if (deliveryMethod === 'kurier') {
       if (!shippingAddress.street) errs.street = "Pole wymagane";
       if (!shippingAddress.city) errs.city = "Pole wymagane";
       if (!/^\d{2}-\d{3}$/.test(shippingAddress.zipCode)) errs.zipCode = "Format 00-000";
     }
+
     if (invoiceData.wantsInvoice) {
       if (!invoiceData.companyName) errs.companyName = "Pole wymagane";
       if (!/^\d{10}$/.test(invoiceData.nip.replace(/-/g, ''))) errs.nip = "Wymagane 10 cyfr";
@@ -78,6 +82,10 @@ function CheckoutContent() {
       if (!invoiceData.city) errs.invoiceCity = "Pole wymagane";
       if (!/^\d{2}-\d{3}$/.test(invoiceData.zipCode)) errs.invoiceZip = "Format 00-000";
     }
+
+    // Walidacja zgody na brak zwrotów
+    if (!acceptTerms) errs.acceptTerms = "Wymagana akceptacja protokołu_";
+
     setErrors(errs);
     return Object.keys(errs).length === 0;
   };
@@ -222,17 +230,16 @@ function CheckoutContent() {
             {/* 03 DOSTAWA */}
             <section>
               <SectionLabel number="03" title="Metoda dostawy" />
-
               <div className="grid grid-cols-2 gap-3 mb-6">
                 {(['paczkomat', 'kurier'] as const).map((method) => (
                   <button key={method} onClick={() => setDeliveryMethod(method)}
                     className={`p-5 border text-left transition-all ${deliveryMethod === method ? 'border-white bg-white/[0.03]' : 'border-white/5 hover:border-white/20'}`}
                   >
                     <p className={`font-mono text-[10px] tracking-widest uppercase mb-1 ${deliveryMethod === method ? 'text-[rgb(255,19,58)]' : 'text-zinc-500'}`}>
-                      {method === 'paczkomat' ? 'InPost' : 'Kurier DPD'}
+                      {method === 'paczkomat' ? 'InPost' : 'Kurier'}
                     </p>
                     <p className={`font-mono text-sm font-bold uppercase ${deliveryMethod === method ? 'text-white' : 'text-zinc-400'}`}>
-                      {method === 'paczkomat' ? 'Paczkomat' : 'Dostawa kurierska'}
+                      {method === 'paczkomat' ? 'Paczkomat' : 'Dostawa na adres'}
                     </p>
                     <p className="font-mono text-[10px] text-[rgb(255,19,58)] mt-2">W cenie — 0 PLN</p>
                   </button>
@@ -270,10 +277,8 @@ function CheckoutContent() {
                     onChange={(e) => setSearch(e.target.value)}
                     className={inputClass(false)}
                   />
-
                   {(points.length > 0 || loadingPoints) && (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                      {/* LISTA PUNKTÓW */}
                       <div className="h-[360px] overflow-y-auto border border-white/5 bg-zinc-950 space-y-px">
                         {loadingPoints ? (
                           <div className="h-full flex items-center justify-center">
@@ -300,8 +305,6 @@ function CheckoutContent() {
                           ))
                         )}
                       </div>
-
-                      {/* MAPA */}
                       <div className="h-[360px] border border-white/5 overflow-hidden relative">
                         {selectedPoint ? (
                           <>
@@ -330,24 +333,46 @@ function CheckoutContent() {
               )}
             </section>
 
+            {/* 04 PROTOKÓŁ I ZGODY (NOWE / KLUCZOWE) */}
+            <section>
+              <SectionLabel number="04" title="Zgody" />
+              <div 
+                onClick={() => setAcceptTerms(!acceptTerms)}
+                className={`p-6 border transition-all cursor-pointer ${errors.acceptTerms ? 'border-[rgb(255,19,58)] bg-[rgb(255,19,58)]/5' : 'border-white/5 bg-zinc-950 hover:border-white/20'}`}
+              >
+                <div className="flex gap-4">
+                  <div className={`w-5 h-5 border shrink-0 flex items-center justify-center transition-colors ${acceptTerms ? 'bg-[rgb(255,19,58)] border-[rgb(255,19,58)]' : 'border-zinc-700'}`}>
+                    {acceptTerms && <span className="text-white text-[12px] font-bold">✓</span>}
+                  </div>
+                  <div className="space-y-2">
+                    <p className="text-[11px] leading-relaxed text-zinc-400 uppercase tracking-tight font-medium">
+                      Akceptuję <Link href="/regulamin" target="_blank" className="text-white underline hover:text-[rgb(255,19,58)]">Regulamin Sklepu</Link> oraz <Link href="/polityka-prywatnosci" target="_blank" className="text-white underline hover:text-[rgb(255,19,58)]">Politykę Prywatności</Link>.
+                    </p>
+                    <p className="text-[10px] leading-relaxed text-zinc-500 italic">
+                      Przyjmuję do wiadomości, że produkty VIZIA są personalizowane (numer VIN) i produkowane na indywidualne zamówienie, co zgodnie z art. 38 pkt 3 Ustawy o prawach konsumenta <span className="text-white font-bold underline italic uppercase">wyłącza prawo do odstąpienia od umowy bez podania przyczyny</span>.
+                    </p>
+                  </div>
+                </div>
+                {errors.acceptTerms && <p className="text-[10px] text-[rgb(255,19,58)] mt-4 tracking-widest uppercase font-bold">{errors.acceptTerms}</p>}
+              </div>
+            </section>
+
           </div>
 
           {/* PODSUMOWANIE */}
           <div className="lg:col-span-5">
+            
+              
+            <SectionLabel number="05" title="Podsumowanie" />
             <div className="border border-white/5 bg-zinc-950 sticky top-[100px]">
-
-              <div className="px-8 py-6 border-b border-white/5">
-                <p className="font-mono text-[10px] text-[rgb(255,19,58)] tracking-widest uppercase mb-1">Podsumowanie_</p>
-                <p className="font-mono text-[10px] text-zinc-600 uppercase tracking-widest">{items.length} {items.length === 1 ? 'pozycja' : 'pozycje'}</p>
-              </div>
 
               <div className="px-8 py-6 space-y-4 border-b border-white/5">
                 {items.map((item, idx) => (
                   <div key={idx} className="flex justify-between items-start gap-4">
                     <div>
-                      <p className="font-mono text-[11px] text-white uppercase tracking-tight">{item.name}</p>
-                      <p className="font-mono text-[10px] text-[rgb(255,19,58)] tracking-widest mt-0.5">VIN: {item.vin}</p>
-                      <p className="font-mono text-[10px] text-zinc-600 uppercase mt-0.5">Rozmiar: {item.size}</p>
+                      <p className="font-mono text-[12px] text-white uppercase tracking-tight">{item.name}</p>
+                      <p className="font-mono text-[12px] text-[rgb(255,19,58)] tracking-widest mt-0.5">VIN: {item.vin}</p>
+                      <p className="font-mono text-[12px] text-zinc-300 uppercase mt-0.5">Rozmiar: {item.size}</p>
                     </div>
                     <span className="font-mono text-sm text-white font-bold shrink-0">{item.price.toFixed(2)} PLN</span>
                   </div>
@@ -357,7 +382,7 @@ function CheckoutContent() {
               <div className="px-8 py-6 border-b border-white/5">
                 <div className="flex justify-between items-center">
                   <span className="font-mono text-[10px] text-zinc-500 uppercase tracking-widest">Dostawa</span>
-                  <span className="font-mono text-[11px] text-[rgb(255,19,58)]">W cenie</span>
+                  <span className="font-mono text-[11px] text-[rgb(19, 255, 149)]">0,00 PLN</span>
                 </div>
               </div>
 
@@ -384,7 +409,6 @@ function CheckoutContent() {
                   Płatność obsługiwana przez Stripe
                 </p>
               </div>
-
             </div>
           </div>
         </div>

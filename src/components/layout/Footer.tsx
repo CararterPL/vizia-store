@@ -124,10 +124,10 @@ export const Footer = () => {
           </div>
           
           <div className="flex gap-8">
-            <Link href="/privacy" className="font-mono text-[9px] text-zinc-400 hover:text-white transition-colors uppercase tracking-[0.2em]">
+            <Link href="/polityka-prywatnosci" className="font-mono text-[9px] text-zinc-400 hover:text-white transition-colors uppercase tracking-[0.2em]">
               Polityka Prywatności
             </Link>
-            <Link href="/terms" className="font-mono text-[9px] text-zinc-400 hover:text-white transition-colors uppercase tracking-[0.2em]">
+            <Link href="/regulamin" className="font-mono text-[9px] text-zinc-400 hover:text-white transition-colors uppercase tracking-[0.2em]">
               Regulamin
             </Link>
           </div>

@@ -9,6 +9,7 @@ import { CartDrawer } from "../components/cart/CartDrawer"
 import { CartProvider } from "../context/CartContext"
 import { NRGProvider } from "../context/NRGContext"
 import { NRGOverlay } from "../components/ui/NRGOverlay"
+import { CookieBanner } from '../components/ui/CookieBanner'
 
 const zalando = localFont({
   src: '../../public/fonts/ZalandoSansSemiExpanded-VariableFont.ttf',
@@ -67,6 +68,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
               isOpen={isCartOpen} 
               onClose={() => setIsCartOpen(false)} 
             />
+
+            <CookieBanner />
             
           </CartProvider>
         </NRGProvider>
