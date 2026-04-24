@@ -39,20 +39,20 @@ const handleAddToCart = async () => {
 
   setIsReserving(true);
   const cleanVin = selectedVin.trim().toUpperCase();
-  const sessionToken = crypto.randomUUID();
-  const reservedUntil = new Date(Date.now() + 30 * 60 * 1000).toISOString(); // 30 minut
-  const now = new Date().toISOString();
+const sessionToken = crypto.randomUUID();
+const reservedUntil = new Date(Date.now() + 30 * 60 * 1000).toISOString();
+const nowISO = new Date().toISOString(); // ← zmień nazwę
 
-  const { data, error } = await supabase
-    .from('vin_pool')
-    .update({
-      reserved_until: reservedUntil,
-      reserved_by_session: sessionToken,
-    })
-    .eq('vin_full', cleanVin)
-    .eq('is_sold', false)
-    .or(`reserved_until.is.null,reserved_until.lt.${now}`)
-    .select();
+const { data, error } = await supabase
+  .from('vin_pool')
+  .update({
+    reserved_until: reservedUntil,
+    reserved_by_session: sessionToken,
+  })
+  .eq('vin_full', cleanVin)
+  .eq('is_sold', false)
+  .or(`reserved_until.is.null,reserved_until.lt.${nowISO}`) // ← użyj nowej nazwy
+  .select();
 
   if (error || !data || data.length === 0) {
     setUiMessage({ type: 'error', text: 'LOCK_FAILED: UNIT_BUSY_OR_NOT_FOUND' });
