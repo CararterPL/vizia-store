@@ -14,8 +14,6 @@ const supabase = createClient(
 export async function POST(req: Request) {
   const body = await req.text();
   const sig = req.headers.get('stripe-signature')!;
-  
-  // Wymuszamy pełny URL dla fetch, aby uniknąć problemów z przekierowaniami
   const origin = 'https://www.viziawear.com';
 
   let event: Stripe.Event;
@@ -35,30 +33,17 @@ export async function POST(req: Request) {
     const session = event.data.object as Stripe.Checkout.Session;
     const metadata = session.metadata;
 
-    console.log('🔔 Procesowanie opłaconej sesji:', session.id);
+    console.log('🔔 Procesowanie sesji:', session.id);
+    console.log('📋 Metadata:', JSON.stringify(metadata, null, 2));
 
     try {
-      // 1. Dekodujemy metadane (VINy i opcjonalny obiekt adresu)
+      // 1. Dekoduj VINy z metadanych
       const vinAssignments = JSON.parse(metadata?.vin_assignments || '[]');
-      
-      let addressObj: any = null;
-      if (metadata?.address) {
-        try {
-          addressObj = JSON.parse(metadata.address);
-        } catch (e) {
-          console.error("Błąd parsowania metadata.address JSON");
-        }
-      }
+      console.log('VIN assignments:', vinAssignments);
 
-      // Rozdzielanie imienia i nazwiska z pola buyer_name
-      const buyerName = metadata?.buyer_name || '';
-      const nameParts = buyerName.trim().split(/\s+/);
-      const firstName = nameParts[0] || 'Klient';
-      const lastName = nameParts.slice(1).join(' ') || '';
-
-      // 2. Oznacz VINy jako sprzedane w bazie danych
+      // 2. Oznacz VINy jako sprzedane
       for (const assignment of vinAssignments) {
-        await supabase
+        const { error } = await supabase
           .from('vin_pool')
           .update({
             is_sold: true,
@@ -67,47 +52,77 @@ export async function POST(req: Request) {
             reserved_by_session: null,
           })
           .eq('vin_full', assignment.vinFull);
+        
+        if (error) console.error('Błąd update VIN:', assignment.vinFull, error);
+        else console.log('✅ VIN oznaczony jako sprzedany:', assignment.vinFull);
       }
 
-      // 3. Zaktualizuj status zamówienia w Supabase
+      // 3. Zaktualizuj status zamówienia
       await supabase
         .from('orders')
         .update({ status: 'paid' })
         .eq('stripe_session_id', session.id);
 
-      // 4. Pobierz przedmioty z sesji Stripe (tu jest nazwa, cena i opis z rozmiarem)
-      const lineItems = await stripe.checkout.sessions.listLineItems(session.id);
+      // 4. Pobierz line items ze Stripe
+      const lineItemsResponse = await stripe.checkout.sessions.listLineItems(session.id);
+      console.log('Line items:', JSON.stringify(lineItemsResponse.data, null, 2));
 
-      // 5. Budujemy finalny obiekt zamówienia dla maila
+      // 5. Buduj items łącząc dane ze Stripe i metadanych
+      const items = lineItemsResponse.data.map((lineItem, index) => {
+        const assignment = vinAssignments[index] || {};
+        // Wyciągnij rozmiar z description: "Rozmiar: M | VIN: SHDWRC-..."
+        const sizeMatch = lineItem.description?.match(/Rozmiar:\s*([^|]+)/);
+        const size = assignment.size || sizeMatch?.[1]?.trim() || 'N/A';
+        const vinFull = assignment.vinFull || '';
+
+        return {
+          name: lineItem.description?.split('|')[0]?.trim() || lineItem.description || '',
+          price: (lineItem.amount_total || 0) / 100,
+          quantity: lineItem.quantity || 1,
+          vin: vinFull,
+          size: size,
+        };
+      });
+
+      console.log('Items dla maila:', JSON.stringify(items, null, 2));
+
+      // 6. Rozdziel imię i nazwisko
+      const buyerName = metadata?.buyer_name || '';
+      const nameParts = buyerName.trim().split(/\s+/);
+      const firstName = nameParts[0] || 'Klient';
+      const lastName = nameParts.slice(1).join(' ') || '';
+
+      // 7. Buduj orderData
+      const deliveryMethod = metadata?.delivery_method || 'kurier';
+      const isPaczkomat = deliveryMethod === 'paczkomat';
+
       const orderData = {
-        items: lineItems.data.map(item => ({
-          name: item.description, // Zawiera: "Nazwa | Rozmiar: ... | VIN: ..."
-          price: item.amount_total / 100,
-          quantity: item.quantity,
-          vin: vinAssignments.map((a: any) => a.vinFull).join(', ')
-        })),
+        items,
         buyerData: {
-          firstName: firstName,
-          lastName: lastName,
+          firstName,
+          lastName,
           phone: metadata?.buyer_phone || '',
-          email: session.customer_details?.email || session.customer_email || ''
+          email: session.customer_details?.email || session.customer_email || '',
         },
-        deliveryMethod: metadata?.delivery_method || 'kurier',
-        selectedPoint: { 
-          name: metadata?.point_name || '' 
+        invoiceData: {
+          wantsInvoice: metadata?.invoice_requested === 'true',
         },
-        // Pobieramy dane z konkretnych kluczy, które teraz wysyła Checkout
-        shippingAddress: {
-          street: metadata?.buyer_street || addressObj?.street || '',
-          city: metadata?.buyer_city || addressObj?.city || '',
-          zip: metadata?.buyer_zip || addressObj?.zipCode || addressObj?.zip || ''
-        },
-        stripeOrderId: session.id
+        deliveryMethod,
+        selectedPoint: isPaczkomat ? {
+          name: metadata?.point_name || '',
+          address_details: { street: '', city: '' },
+        } : null,
+        shippingAddress: !isPaczkomat ? {
+          street: metadata?.buyer_street || '',
+          city: metadata?.buyer_city || '',
+          zipCode: metadata?.buyer_zip || '',
+        } : null,
+        stripeOrderId: session.id,
       };
 
-      // 6. Wyślij e-mail (drukarnia / klient)
-      console.log('📨 Wysyłanie maila dla:', orderData.buyerData.email);
-      
+      console.log('📦 OrderData dla maila:', JSON.stringify(orderData, null, 2));
+
+      // 8. Wyślij maile
       const emailResponse = await fetch(`${origin}/api/send-order-email`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -118,7 +133,7 @@ export async function POST(req: Request) {
         const errorText = await emailResponse.text();
         console.error('❌ Błąd API mailowego:', errorText);
       } else {
-        console.log('✅ Mail wysłany pomyślnie');
+        console.log('✅ Maile wysłane pomyślnie');
       }
 
     } catch (processError) {

@@ -18,8 +18,8 @@ export async function POST(req: Request) {
     const totalPrice = items.reduce((sum: number, item: any) => sum + item.price, 0);
 
     const deliveryText = deliveryMethod === 'paczkomat'
-      ? `Paczkomat InPost: ${selectedPoint?.name} / ${selectedPoint?.address_details?.street}, ${selectedPoint?.address_details?.city}`
-      : `Kurier: ${shippingAddress?.street}, ${shippingAddress?.zipCode} ${shippingAddress?.city}`;
+      ? `Paczkomat InPost: ${selectedPoint?.name || 'N/A'}`
+      : `Kurier: ${shippingAddress?.street || ''}, ${shippingAddress?.zipCode || ''} ${shippingAddress?.city || ''}`;
 
     const invoiceText = invoiceData?.wantsInvoice
       ? `
