@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { ProductHeader } from './info/ProductHeader';
 import { SizeSelector } from './info/SizeSelector';
@@ -8,6 +8,17 @@ import { VinModule } from './info/VinModule';
 import { ProductAccordion } from './info/ProductAccordion';
 import { Button } from '../ui/Button';
 import { useCart } from '../../context/CartContext';
+
+// Funkcja pomocnicza do stałego tokena sesji (zapisuje w sessionStorage)
+const getSessionToken = () => {
+  if (typeof window === 'undefined') return '';
+  let token = sessionStorage.getItem('vizia_session_token');
+  if (!token) {
+    token = crypto.randomUUID();
+    sessionStorage.setItem('vizia_session_token', token);
+  }
+  return token;
+};
 
 export const ProductInfo = ({ product, isNRG = false }: any) => {
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
@@ -31,15 +42,7 @@ export const ProductInfo = ({ product, isNRG = false }: any) => {
     isClassicsGarage = nowDate > classicsDate;
   }
 
-  // DEBUG
-  console.log('selectedVin:', selectedVin);
-  console.log('selectedSize:', selectedSize);
-  console.log('isPreRelease:', isPreRelease);
-  console.log('isClassicsGarage:', isClassicsGarage);
-  console.log('isReserving:', isReserving);
-
   const handleAddToCart = async () => {
-    console.log('handleAddToCart wywołany!');
     setUiMessage(null);
 
     if (!selectedSize) {
@@ -53,54 +56,45 @@ export const ProductInfo = ({ product, isNRG = false }: any) => {
 
     setIsReserving(true);
     const cleanVin = selectedVin.trim().toUpperCase();
-    const sessionToken = crypto.randomUUID();
-    const reservedUntil = new Date(Date.now() + 30 * 60 * 1000).toISOString();
-    const nowISO = new Date().toISOString();
+    const sessionToken = getSessionToken(); // Używamy stałego tokena dla tej sesji przeglądarki
 
-    console.log('cleanVin:', cleanVin);
-    console.log('nowISO:', nowISO);
-    console.log('reservedUntil:', reservedUntil);
+    // WYWOŁANIE FUNKCJI RPC (Zamiast .update)
+    // To gwarantuje, że rezerwacja się uda tylko jeśli VIN jest wolny
+    const { data: isReserved, error: rpcError } = await supabase.rpc('reserve_vin', {
+      target_vin: cleanVin,
+      target_product_id: product.id,
+      session_id: sessionToken
+    });
 
-    const { data, error } = await supabase
-      .from('vin_pool')
-      .update({
-        reserved_until: reservedUntil,
-        reserved_by_session: sessionToken,
-      })
-      .eq('vin_full', cleanVin)
-      .eq('is_sold', false)
-      .or(`reserved_until.is.null,reserved_until.lt.${nowISO}`)
-      .select();
-
-    console.log('Supabase data:', data);
-    console.log('Supabase error:', error);
-
-    if (error || !data || data.length === 0) {
+    if (rpcError || !isReserved) {
+      console.error('RPC Error:', rpcError);
       setUiMessage({ type: 'error', text: 'LOCK_FAILED: UNIT_BUSY_OR_NOT_FOUND' });
       setIsReserving(false);
-      setRefreshTrigger(prev => prev + 1);
+      setRefreshTrigger(prev => prev + 1); // Odśwież VinModule, by pobrał nowy wolny VIN
       return;
     }
 
+    // Jeśli rezerwacja w DB się udała, dodajemy do koszyka
     addItem({
       id: product.id,
       name: product.name,
       price: product.price,
       size: selectedSize,
       vin: cleanVin,
-      sessionToken,
+      sessionToken: sessionToken, // Przekazujemy token, by móc go "odbić" przy płatności
       quantity: 1
     });
 
-    setUiMessage({ type: 'success', text: `UNIT_LOCKED: ${cleanVin.split('-').pop()}` });
-    setRefreshTrigger(prev => prev + 1);
+    setUiMessage({ type: 'success', text: `UNIT_LOCKED: ${cleanVin.split('-').pop()} (15 MIN)` });
+    
+    // Resetujemy wybór, ale nie refreshujemy wszystkiego, żeby uniknąć pętli
     setSelectedVin(null);
     setIsReserving(false);
   };
 
   return (
     <div className="space-y-10">
-      <ProductHeader product={product} key={`header-${refreshTrigger}`} />
+      <ProductHeader product={product} />
 
       {(!isPreRelease || isNRG) && (!isClassicsGarage || isNRG) ? (
         <>
@@ -112,6 +106,8 @@ export const ProductInfo = ({ product, isNRG = false }: any) => {
             baseVin={product.baseVin}
             productId={product.id}
             onVinSelect={setSelectedVin}
+            // Przekazujemy session_id do VinModule, żeby widział własne rezerwacje jako wolne
+            currentSessionId={getSessionToken()} 
           />
         </>
       ) : (
@@ -142,10 +138,7 @@ export const ProductInfo = ({ product, isNRG = false }: any) => {
           variant="cta"
           size="lg"
           disabled={isReserving || (isPreRelease && !isNRG) || (isClassicsGarage && !isNRG)}
-          onClick={() => {
-            console.log('PRZYCISK KLIKNIĘTY!');
-            handleAddToCart();
-          }}
+          onClick={handleAddToCart}
           className="w-full text-sm py-8 font-black italic tracking-[0.2em]"
         >
           {isReserving ? 'SYNCHRONIZING...' : 'DODAJ DO GARAŻU'}

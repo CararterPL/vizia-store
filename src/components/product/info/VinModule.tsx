@@ -4,7 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../../../lib/supabase';
 import { useNRG } from '../../../context/NRGContext';
 
-export const VinModule = ({ series, baseVin, productId, onVinSelect, onSessionToken }: any) => {
+// DODAJEMY currentSessionId do typów argumentów
+export const VinModule = ({ series, baseVin, productId, onVinSelect, currentSessionId }: any) => {
   const { isNRG } = useNRG();
   const [unitSlot, setUnitSlot] = useState('');
   const [status, setStatus] = useState<'idle' | 'checking' | 'available' | 'taken'>('idle');
@@ -12,6 +13,7 @@ export const VinModule = ({ series, baseVin, productId, onVinSelect, onSessionTo
 
   const now = new Date().toISOString();
 
+  // 1. Automatyczne pobieranie wolnego VINu (dla nie-NRG)
   useEffect(() => {
     if (!isNRG && series !== 'POLE_POSITION' && productId) {
       const fetchAutoVin = async () => {
@@ -21,7 +23,7 @@ export const VinModule = ({ series, baseVin, productId, onVinSelect, onSessionTo
           .eq('product_id', productId)
           .eq('is_sold', false)
           .is('assigned_at', null)
-          // Pomijaj aktywne rezerwacje
+          // Pobieraj tylko te, które nie mają rezerwacji LUB ich rezerwacja wygasła
           .or(`reserved_until.is.null,reserved_until.lt.${now}`)
           .order('vin_full', { ascending: true })
           .limit(1)
@@ -36,54 +38,55 @@ export const VinModule = ({ series, baseVin, productId, onVinSelect, onSessionTo
       };
       fetchAutoVin();
     }
-  }, [isNRG, productId, series]);
+  }, [isNRG, productId, series, now, onVinSelect]);
 
-const checkVinAvailability = async (val: string) => {
-  if (val.length !== 2) {
-    setStatus('idle');
-    onVinSelect(null);
-    return;
-  }
+  // 2. Ręczne sprawdzanie VINu (dla NRG)
+  const checkVinAvailability = async (val: string) => {
+    if (val.length !== 2) {
+      setStatus('idle');
+      onVinSelect(null);
+      return;
+    }
 
-  setStatus('checking');
-  const fullVin = `${baseVin}-${val.padStart(2, '0')}`.toUpperCase();
+    setStatus('checking');
+    const fullVin = `${baseVin}-${val.padStart(2, '0')}`.toUpperCase();
 
-  const { data, error } = await supabase
-    .from('vin_pool')
-    .select('is_sold, assigned_at, reserved_until, reserved_by_session')
-    .eq('vin_full', fullVin)
-    .eq('product_id', productId)
-    .single();
+    const { data, error } = await supabase
+      .from('vin_pool')
+      .select('is_sold, reserved_until, reserved_by_session')
+      .eq('vin_full', fullVin)
+      .eq('product_id', productId)
+      .single();
 
-  console.log('VinModule check:', fullVin, data, error);
-
-  if (error || !data) {
-    setStatus('taken');
-    onVinSelect(null);
-    return;
-  }
-
-  if (data.is_sold) {
-    setStatus('taken');
-    onVinSelect(null);
-    return;
-  }
-
-  // Sprawdź rezerwację — tylko jeśli reserved_until jest w przyszłości
-  if (data.reserved_until) {
-    const reservedUntilDate = new Date(data.reserved_until);
-    const nowDate = new Date();
-    if (reservedUntilDate > nowDate) {
+    if (error || !data) {
       setStatus('taken');
       onVinSelect(null);
       return;
     }
-  }
 
-  // VIN dostępny
-  setStatus('available');
-  onVinSelect(fullVin);
-};
+    if (data.is_sold) {
+      setStatus('taken');
+      onVinSelect(null);
+      return;
+    }
+
+    // LOGIKA REZERWACJI - NAPRAWIONA
+    if (data.reserved_until) {
+      const reservedUntilDate = new Date(data.reserved_until);
+      const nowDate = new Date();
+
+      // Jeśli rezerwacja jest aktualna ORAZ zarezerwował to KTOŚ INNY
+      if (reservedUntilDate > nowDate && data.reserved_by_session !== currentSessionId) {
+        setStatus('taken');
+        onVinSelect(null);
+        return;
+      }
+    }
+
+    // Jeśli doszliśmy tutaj, to VIN jest dostępny (lub zarezerwowany przez nas)
+    setStatus('available');
+    onVinSelect(fullVin);
+  };
 
   if (series === 'POLE_POSITION') return null;
 
