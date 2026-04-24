@@ -13,6 +13,15 @@ const supabase = createClient(
 
 export async function POST(req: Request) {
   try {
+    const body = await req.json();
+    
+    // --- LOGI DEBUGUJĄCE ---
+    console.log('=== CHECKOUT DEBUG START ===');
+    console.log('Metoda dostawy:', body.deliveryMethod);
+    console.log('Adres wysyłki (shippingAddress):', body.shippingAddress);
+    console.log('Dane kupującego (buyerData):', body.buyerData);
+    console.log('=== CHECKOUT DEBUG END ===');
+
     const { 
       items, 
       email, 
@@ -21,7 +30,7 @@ export async function POST(req: Request) {
       deliveryMethod, 
       selectedPoint, 
       shippingAddress 
-    } = await req.json();
+    } = body;
 
     const vinAssignments = items.map((item: any) => ({
       vinFull: item.vin,
@@ -32,7 +41,6 @@ export async function POST(req: Request) {
         currency: 'pln',
         product_data: {
           name: `${item.name}`,
-          // Dodajemy rozmiar do opisu, to zawsze widać w panelu Stripe
           description: `VIN: ${item.vin} | ROZMIAR: ${item.size}`,
         },
         unit_amount: Math.round(item.price * 100),
@@ -51,19 +59,22 @@ export async function POST(req: Request) {
       success_url: `${origin}/checkout/success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${origin}/checkout`,
       metadata: {
-        buyer_name: `${buyerData.firstName} ${buyerData.lastName}`,
-        buyer_phone: buyerData.phone,
+        buyer_name: `${buyerData?.firstName || ''} ${buyerData?.lastName || ''}`.trim(),
+        buyer_phone: buyerData?.phone || 'N/A',
         delivery_method: deliveryMethod,
         point_name: selectedPoint ? selectedPoint.name : 'N/A',
         vin_assignments: JSON.stringify(vinAssignments),
-        // TUTAJ POPRAWKA - Mapujemy jawnie każde pole
+        
+        // Mapowanie pól adresu dla Webhooka (jawne stringi)
         buyer_street: shippingAddress?.street || '',
         buyer_city: shippingAddress?.city || '',
-        buyer_zip: shippingAddress?.zipCode || '', // frontend używa zipCode
-        // Dodatkowo cały obiekt jako string
+        buyer_zip: shippingAddress?.zipCode || '', 
+        
+        // Zapasowy obiekt JSON
         address: shippingAddress ? JSON.stringify(shippingAddress) : '',
-        invoice_requested: invoiceData.wantsInvoice ? 'true' : 'false',
-        invoice_details: invoiceData.wantsInvoice ? JSON.stringify(invoiceData) : '',
+        
+        invoice_requested: invoiceData?.wantsInvoice ? 'true' : 'false',
+        invoice_details: invoiceData?.wantsInvoice ? JSON.stringify(invoiceData) : '',
       },
     });
 
@@ -71,16 +82,18 @@ export async function POST(req: Request) {
     const { error: orderError } = await supabase.from('orders').insert({
       status: 'pending',
       customer_email: email,
-      customer_phone: buyerData.phone,
+      customer_phone: buyerData?.phone,
       shipping_type: deliveryMethod,
       paczkomat_id: selectedPoint?.name ?? null,
-      address_json: shippingAddress ?? null, // To zapisuje adres w bazie przy starcie
+      address_json: shippingAddress ?? null,
       assigned_vin: items.map((i: any) => i.vin).join(', '),
       stripe_session_id: session.id,
       total_amount: items.reduce((sum: number, i: any) => sum + i.price, 0),
     });
 
-    if (orderError) console.error('Supabase Order Error:', orderError);
+    if (orderError) {
+      console.error('Supabase Order Error:', orderError);
+    }
 
     return NextResponse.json({ url: session.url });
 
