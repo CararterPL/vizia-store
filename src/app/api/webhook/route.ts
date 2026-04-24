@@ -14,7 +14,6 @@ const supabase = createClient(
 export async function POST(req: Request) {
   const body = await req.text();
   const sig = req.headers.get('stripe-signature')!;
-  // Upewnij się, że origin ma WWW jeśli tak masz w Stripe
   const origin = req.headers.get('origin') || 'https://www.viziawear.com';
 
   let event: Stripe.Event;
@@ -32,19 +31,29 @@ export async function POST(req: Request) {
 
   if (event.type === 'checkout.session.completed') {
     const session = event.data.object as Stripe.Checkout.Session;
+    const metadata = session.metadata;
 
     try {
-      // 1. Dekodujemy metadane (zgodnie z logami Stripe)
-      const vinAssignments = JSON.parse(session.metadata?.vin_assignments || '[]');
+      // 1. Dekodujemy metadane
+      const vinAssignments = JSON.parse(metadata?.vin_assignments || '[]');
       
-      // LOGIKA NAPRAWCZA DLA ADRESU:
-      // Twoje metadane nie mają obiektu "address", mają pola "buyer_name" itp.
-      // Jeśli adres przesyłasz w metadata jako stringi, musimy je stąd wyciągnąć.
-      const buyerName = session.metadata?.buyer_name || '';
-      const [firstName, ...lastNameParts] = buyerName.split(' ');
-      const lastName = lastNameParts.join(' ');
+      // Próba odczytania adresu z obiektu JSON (jeśli istnieje)
+      let addressObj: any = null;
+      try {
+        if (metadata?.address) {
+          addressObj = JSON.parse(metadata.address);
+        }
+      } catch (e) {
+        console.error("Błąd parsowania adresu JSON:", e);
+      }
 
-      // 2. Oznacz VINy jako sprzedane
+      // Rozdzielanie imienia i nazwiska
+      const buyerName = metadata?.buyer_name || '';
+      const nameParts = buyerName.trim().split(/\s+/);
+      const firstName = nameParts[0] || 'Klient';
+      const lastName = nameParts.slice(1).join(' ') || '';
+
+      // 2. Oznacz VINy jako sprzedane w bazie danych
       for (const assignment of vinAssignments) {
         await supabase
           .from('vin_pool')
@@ -57,53 +66,57 @@ export async function POST(req: Request) {
           .eq('vin_full', assignment.vinFull);
       }
 
-      // 3. Zaktualizuj status zamówienia
+      // 3. Zaktualizuj status zamówienia w Supabase
       await supabase
         .from('orders')
         .update({ status: 'paid' })
         .eq('stripe_session_id', session.id);
 
-      // 4. Przygotuj dane do maila
+      // 4. Przygotuj listę przedmiotów z sesji Stripe
       const lineItems = await stripe.checkout.sessions.listLineItems(session.id);
 
-      // Mapowanie danych dla maila, aby uniknąć "undefined"
+      // 5. Budujemy finalny obiekt zamówienia dla maila
       const orderData = {
         items: lineItems.data.map(item => ({
-          name: item.description, // Zawiera nazwę + rozmiar (Stripe to łączy)
+          name: item.description, 
           price: item.amount_total / 100,
           quantity: item.quantity,
           vin: vinAssignments.map((a: any) => a.vinFull).join(', ')
         })),
         buyerData: {
-          firstName: firstName || 'Klient',
-          lastName: lastName || '',
-          phone: session.metadata?.buyer_phone || '',
-          email: session.customer_details?.email || session.customer_email
+          firstName: firstName,
+          lastName: lastName,
+          phone: metadata?.buyer_phone || '',
+          email: session.customer_details?.email || session.customer_email || ''
         },
-        deliveryMethod: session.metadata?.delivery_method || 'Kurier',
+        deliveryMethod: metadata?.delivery_method || 'Kurier',
         selectedPoint: { 
-          name: session.metadata?.point_name || '' 
+          name: metadata?.point_name || '' 
         },
-        // Jeśli nie masz obiektu address w metadata, budujemy go z dostępnych pól:
+        // Pobieramy dane z obiektu LUB z płaskich metadanych
         shippingAddress: {
-          street: session.metadata?.buyer_street || '', // Upewnij się że wysyłasz te klucze w checkout
-          city: session.metadata?.buyer_city || '',
-          zip: session.metadata?.buyer_zip || ''
+          street: addressObj?.street || metadata?.buyer_street || '',
+          city: addressObj?.city || metadata?.buyer_city || '',
+          zip: addressObj?.zipCode || addressObj?.zip || metadata?.buyer_zip || ''
         },
         stripeOrderId: session.id
       };
 
-      // 5. Wyślij maila
-      await fetch(`${origin}/api/send-order-email`, {
+      // 6. Wyślij e-mail do drukarni/klienta
+      const emailResponse = await fetch(`${origin}/api/send-order-email`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(orderData),
       });
 
-      console.log(`✅ Sukces: ${session.id}`);
+      if (!emailResponse.ok) {
+        throw new Error(`Email API responded with status ${emailResponse.status}`);
+      }
+
+      console.log(`✅ Webhook zakończony sukcesem dla sesji: ${session.id}`);
 
     } catch (processError) {
-      console.error('Błąd procesowania:', processError);
+      console.error('❌ Błąd podczas procesowania webhooka:', processError);
       return NextResponse.json({ error: 'Processing failed' }, { status: 500 });
     }
   }

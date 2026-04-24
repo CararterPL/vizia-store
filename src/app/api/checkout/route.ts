@@ -56,7 +56,11 @@ export async function POST(req: Request) {
         delivery_method: deliveryMethod,
         point_name: selectedPoint ? selectedPoint.name : 'N/A',
         vin_assignments: JSON.stringify(vinAssignments),
-        // POPRAWKA: Przekazujemy adres do metadanych, żeby Webhook mógł go odczytać
+        // Dodajemy płaskie pola adresu dla pewności:
+        buyer_street: shippingAddress?.street || '',
+        buyer_city: shippingAddress?.city || '',
+        buyer_zip: shippingAddress?.zipCode || '', // Mapujemy zipCode na zip
+        // I zostawiamy obiekt dla kompatybilności:
         address: shippingAddress ? JSON.stringify(shippingAddress) : '',
         invoice_requested: invoiceData.wantsInvoice ? 'true' : 'false',
         invoice_details: invoiceData.wantsInvoice ? JSON.stringify(invoiceData) : '',
