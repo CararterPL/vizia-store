@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { supabase } from '../../lib/supabase';
 import { ProductHeader } from './info/ProductHeader';
 import { SizeSelector } from './info/SizeSelector';
@@ -9,7 +9,7 @@ import { ProductAccordion } from './info/ProductAccordion';
 import { Button } from '../ui/Button';
 import { useCart } from '../../context/CartContext';
 
-// Funkcja pomocnicza do stałego tokena sesji (zapisuje w sessionStorage)
+// Funkcja pomocnicza do stałego tokena sesji
 const getSessionToken = () => {
   if (typeof window === 'undefined') return '';
   let token = sessionStorage.getItem('vizia_session_token');
@@ -55,41 +55,60 @@ export const ProductInfo = ({ product, isNRG = false }: any) => {
     }
 
     setIsReserving(true);
-    const cleanVin = selectedVin.trim().toUpperCase();
-    const sessionToken = getSessionToken(); // Używamy stałego tokena dla tej sesji przeglądarki
-
-    // WYWOŁANIE FUNKCJI RPC (Zamiast .update)
-    // To gwarantuje, że rezerwacja się uda tylko jeśli VIN jest wolny
-    const { data: isReserved, error: rpcError } = await supabase.rpc('reserve_vin', {
-      target_vin: cleanVin,
-      target_product_id: product.id,
-      session_id: sessionToken
-    });
-
-    if (rpcError || !isReserved) {
-      console.error('RPC Error:', rpcError);
-      setUiMessage({ type: 'error', text: 'LOCK_FAILED: UNIT_BUSY_OR_NOT_FOUND' });
-      setIsReserving(false);
-      setRefreshTrigger(prev => prev + 1); // Odśwież VinModule, by pobrał nowy wolny VIN
-      return;
-    }
-
-    // Jeśli rezerwacja w DB się udała, dodajemy do koszyka
-    addItem({
-      id: product.id,
-      name: product.name,
-      price: product.price,
-      size: selectedSize,
-      vin: cleanVin,
-      sessionToken: sessionToken, // Przekazujemy token, by móc go "odbić" przy płatności
-      quantity: 1
-    });
-
-    setUiMessage({ type: 'success', text: `UNIT_LOCKED: ${cleanVin.split('-').pop()} (15 MIN)` });
     
-    // Resetujemy wybór, ale nie refreshujemy wszystkiego, żeby uniknąć pętli
-    setSelectedVin(null);
-    setIsReserving(false);
+    try {
+      const cleanVin = selectedVin.trim().toUpperCase();
+      const sessionToken = getSessionToken();
+
+      console.log('--- START REZERWACJI ---');
+      console.log('VIN:', cleanVin);
+      console.log('Session UUID:', sessionToken);
+
+      // WYWOŁANIE RPC
+      const { data: isReserved, error: rpcError } = await supabase.rpc('reserve_vin', {
+        target_vin: cleanVin,
+        target_product_id: product.id,
+        session_id: sessionToken // To musi pasować do typu UUID w SQL
+      });
+
+      if (rpcError) {
+        console.error('BŁĄD RPC (Szczegóły):', rpcError);
+        setUiMessage({ 
+          type: 'error', 
+          text: `SYSTEM_BUSY: ${rpcError.message || 'BŁĄD KOMUNIKACJI'}` 
+        });
+        setIsReserving(false);
+        return;
+      }
+
+      if (!isReserved) {
+        console.log('REZERWACJA ODRZUCONA: VIN zajęty lub nie istnieje');
+        setUiMessage({ type: 'error', text: 'LOCK_FAILED: NUMER_ZAJĘTY' });
+        setIsReserving(false);
+        setRefreshTrigger(prev => prev + 1);
+        return;
+      }
+
+      // Jeśli sukces w bazie -> dodajemy do koszyka lokalnego
+      addItem({
+        id: product.id,
+        name: product.name,
+        price: product.price,
+        size: selectedSize,
+        vin: cleanVin,
+        sessionToken: sessionToken,
+        quantity: 1
+      });
+
+      setUiMessage({ type: 'success', text: `UNIT_LOCKED: ${cleanVin.split('-').pop()}` });
+      setSelectedVin(null);
+      
+    } catch (err) {
+      console.error('KRYTYCZNY BŁĄD FRONTENDU:', err);
+      setUiMessage({ type: 'error', text: 'CRITICAL_ERROR: SPRÓBUJ PONOWNIE' });
+    } finally {
+      setIsReserving(false);
+    }
   };
 
   return (
@@ -106,7 +125,6 @@ export const ProductInfo = ({ product, isNRG = false }: any) => {
             baseVin={product.baseVin}
             productId={product.id}
             onVinSelect={setSelectedVin}
-            // Przekazujemy session_id do VinModule, żeby widział własne rezerwacje jako wolne
             currentSessionId={getSessionToken()} 
           />
         </>
