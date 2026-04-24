@@ -10,7 +10,6 @@ export const VinModule = ({ series, baseVin, productId, onVinSelect, currentSess
   const [status, setStatus] = useState<'idle' | 'checking' | 'available' | 'taken'>('idle');
   const [autoVin, setAutoVin] = useState<string | null>(null);
 
-  // 1. Funkcja sprawdzająca dostępność VIN (NRG)
   const checkVinAvailability = useCallback(async (val: string) => {
     if (val.length !== 2) {
       setStatus('idle');
@@ -34,20 +33,17 @@ export const VinModule = ({ series, baseVin, productId, onVinSelect, currentSess
       return;
     }
 
-    // LOGIKA ROZPOZNAWANIA TWOJEJ REZERWACJI
+    // LOGIKA BLOKADY POWTÓRNEGO WYBORU (DLA TWOJEJ SESJI)
     if (data.reserved_until) {
       const reservedUntilDate = new Date(data.reserved_until);
       const nowDate = new Date();
 
-      // Jeśli rezerwacja jest aktywna (w przyszłości)
       if (reservedUntilDate > nowDate) {
-        // I jeśli zarezerwował to KTOŚ INNY (tokeny się różnią)
-        if (data.reserved_by_session !== currentSessionId) {
-          setStatus('taken');
-          onVinSelect(null);
-          return;
-        }
-        // Jeśli zarezerwowałeś to TY -> status: available (możesz odświeżyć koszyk)
+        // Jeśli zarezerwowany przez kogokolwiek (Ciebie LUB kogoś innego) -> Zajęty
+        // To zapobiega dodaniu tego samego VINu dwa razy do koszyka
+        setStatus('taken');
+        onVinSelect(null);
+        return;
       }
     }
 
@@ -55,7 +51,6 @@ export const VinModule = ({ series, baseVin, productId, onVinSelect, currentSess
     onVinSelect(fullVin);
   }, [baseVin, productId, onVinSelect, currentSessionId]);
 
-  // 2. Automatyczne pobieranie wolnego VINu (Non-NRG)
   useEffect(() => {
     if (!isNRG && series !== 'POLE_POSITION' && productId) {
       const fetchAutoVin = async () => {

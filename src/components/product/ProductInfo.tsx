@@ -27,7 +27,7 @@ export const ProductInfo = ({ product, isNRG = false }: any) => {
   const [refreshTrigger, setRefreshTrigger] = useState(0);
   const [uiMessage, setUiMessage] = useState<{type: 'error' | 'success' | 'info', text: string} | null>(null);
 
-  const { addItem } = useCart();
+  const { addItem, items } = useCart();
 
   const nowDate = new Date();
   const releaseDate = product?.release_date ? new Date(product.release_date) : null;
@@ -54,42 +54,42 @@ export const ProductInfo = ({ product, isNRG = false }: any) => {
       return;
     }
 
+    // SPRAWDZENIE CZY VIN JEST JUŻ W TWOIM KOSZYKU
+    const alreadyInCart = items.some((item: any) => item.vin === selectedVin);
+    if (alreadyInCart) {
+      setUiMessage({ type: 'info', text: 'INFO: TEN_NUMER_JEST_JUŻ_W_TWOIM_GARAŻU' });
+      return;
+    }
+
     setIsReserving(true);
     
     try {
       const cleanVin = selectedVin.trim().toUpperCase();
       const sessionToken = getSessionToken();
 
-      console.log('--- START REZERWACJI ---');
-      console.log('VIN:', cleanVin);
-      console.log('Session UUID:', sessionToken);
-
       // WYWOŁANIE RPC
       const { data: isReserved, error: rpcError } = await supabase.rpc('reserve_vin', {
         target_vin: cleanVin,
         target_product_id: product.id,
-        session_id: sessionToken // To musi pasować do typu UUID w SQL
+        session_id: sessionToken
       });
 
       if (rpcError) {
-        console.error('BŁĄD RPC (Szczegóły):', rpcError);
+        console.error('BŁĄD RPC:', rpcError);
         setUiMessage({ 
           type: 'error', 
           text: `SYSTEM_BUSY: ${rpcError.message || 'BŁĄD KOMUNIKACJI'}` 
         });
-        setIsReserving(false);
         return;
       }
 
       if (!isReserved) {
-        console.log('REZERWACJA ODRZUCONA: VIN zajęty lub nie istnieje');
-        setUiMessage({ type: 'error', text: 'LOCK_FAILED: NUMER_ZAJĘTY' });
-        setIsReserving(false);
+        setUiMessage({ type: 'error', text: 'LOCK_FAILED: NUMER_WŁAŚNIE_ZOSTAŁ_ZAJĘTY' });
         setRefreshTrigger(prev => prev + 1);
         return;
       }
 
-      // Jeśli sukces w bazie -> dodajemy do koszyka lokalnego
+      // Dodanie do koszyka
       addItem({
         id: product.id,
         name: product.name,
@@ -100,11 +100,14 @@ export const ProductInfo = ({ product, isNRG = false }: any) => {
         quantity: 1
       });
 
-      setUiMessage({ type: 'success', text: `UNIT_LOCKED: ${cleanVin.split('-').pop()}` });
+      setUiMessage({ type: 'success', text: `UNIT_LOCKED: ${cleanVin.split('-').pop()} (15 MIN)` });
+      
+      // Resetujemy wybór VIN, aby wymusić nowy wybór przy kolejnym produkcie
       setSelectedVin(null);
+      setRefreshTrigger(prev => prev + 1);
       
     } catch (err) {
-      console.error('KRYTYCZNY BŁĄD FRONTENDU:', err);
+      console.error('CRITICAL FRONTEND ERROR:', err);
       setUiMessage({ type: 'error', text: 'CRITICAL_ERROR: SPRÓBUJ PONOWNIE' });
     } finally {
       setIsReserving(false);
@@ -140,7 +143,9 @@ export const ProductInfo = ({ product, isNRG = false }: any) => {
       <div className="pt-2">
         {uiMessage && (
           <div className={`p-4 border font-mono text-[10px] tracking-[0.2em] mb-4 ${
-            uiMessage.type === 'error' ? 'text-red-500 border-red-500/30' : 'text-emerald-500 border-emerald-500/30'
+            uiMessage.type === 'error' ? 'text-red-500 border-red-500/30' : 
+            uiMessage.type === 'info' ? 'text-blue-400 border-blue-400/30' :
+            'text-emerald-500 border-emerald-500/30'
           }`}>
             {uiMessage.text}
           </div>
