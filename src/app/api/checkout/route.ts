@@ -35,7 +35,7 @@ export async function POST(req: Request) {
     const origin = req.headers.get('origin') || 'https://vizia.pl';
 
     const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card', 'p24', 'blik'],
+      payment_method_types: ['card', 'blik'],
       line_items,
       mode: 'payment',
       customer_email: email,
