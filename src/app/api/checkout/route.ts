@@ -15,13 +15,6 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
     
-    // --- LOGI DEBUGUJĄCE ---
-    console.log('=== CHECKOUT DEBUG START ===');
-    console.log('Metoda dostawy:', body.deliveryMethod);
-    console.log('Adres wysyłki (shippingAddress):', body.shippingAddress);
-    console.log('Dane kupującego (buyerData):', body.buyerData);
-    console.log('=== CHECKOUT DEBUG END ===');
-
     const { 
       items, 
       email, 
@@ -32,16 +25,14 @@ export async function POST(req: Request) {
       shippingAddress 
     } = body;
 
-    const vinAssignments = items.map((item: any) => ({
-      vinFull: item.vin,
-    }));
-
+    // Przygotowanie linii produktów dla Stripe
     const line_items = items.map((item: any) => ({
       price_data: {
         currency: 'pln',
         product_data: {
-          name: `${item.name}`,
-          description: `VIN: ${item.vin} | ROZMIAR: ${item.size}`,
+          name: item.name,
+          // Kluczowe: Przekazujemy rozmiar w opisie, by webhook mógł go wyłuskać
+          description: `Rozmiar: ${item.size || 'Uniwersalny'} | VIN: ${item.vin}`,
         },
         unit_amount: Math.round(item.price * 100),
       },
@@ -50,7 +41,6 @@ export async function POST(req: Request) {
 
     const origin = req.headers.get('origin') || 'https://www.viziawear.com';
 
-    // 3. Utworzenie sesji Stripe Checkout
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card', 'blik'],
       line_items,
@@ -60,25 +50,19 @@ export async function POST(req: Request) {
       cancel_url: `${origin}/checkout`,
       metadata: {
         buyer_name: `${buyerData?.firstName || ''} ${buyerData?.lastName || ''}`.trim(),
-        buyer_phone: buyerData?.phone || 'N/A',
-        delivery_method: deliveryMethod,
-        point_name: selectedPoint ? selectedPoint.name : 'N/A',
-        vin_assignments: JSON.stringify(vinAssignments),
-        
-        // Mapowanie pól adresu dla Webhooka (jawne stringi)
-        buyer_street: shippingAddress?.street || '',
-        buyer_city: shippingAddress?.city || '',
-        buyer_zip: shippingAddress?.zipCode || '', 
-        
-        // Zapasowy obiekt JSON
-        address: shippingAddress ? JSON.stringify(shippingAddress) : '',
-        
+        buyer_phone: String(buyerData?.phone || ''),
+        delivery_method: String(deliveryMethod || 'kurier'),
+        point_name: selectedPoint?.name || 'N/A',
+        vin_assignments: JSON.stringify(items.map((i: any) => ({ vinFull: i.vin, size: i.size }))),
+        // Dane adresowe - muszą być płaskimi stringami
+        buyer_street: String(shippingAddress?.street || ''),
+        buyer_city: String(shippingAddress?.city || ''),
+        buyer_zip: String(shippingAddress?.zipCode || ''),
         invoice_requested: invoiceData?.wantsInvoice ? 'true' : 'false',
-        invoice_details: invoiceData?.wantsInvoice ? JSON.stringify(invoiceData) : '',
       },
     });
 
-    // 4. Zapisanie zamówienia w Supabase
+    // Zapis do bazy - USUNĄŁEM total_amount, bo powoduje błąd w Twoim Supabase
     const { error: orderError } = await supabase.from('orders').insert({
       status: 'pending',
       customer_email: email,
@@ -88,20 +72,15 @@ export async function POST(req: Request) {
       address_json: shippingAddress ?? null,
       assigned_vin: items.map((i: any) => i.vin).join(', '),
       stripe_session_id: session.id,
-      total_amount: items.reduce((sum: number, i: any) => sum + i.price, 0),
+      // total_amount: items.reduce((sum: number, i: any) => sum + i.price, 0), // ODBLOKUJ JAK DODASZ KOLUMNĘ W SUPABASE
     });
 
-    if (orderError) {
-      console.error('Supabase Order Error:', orderError);
-    }
+    if (orderError) console.error('Błąd zapisu zamówienia:', orderError.message);
 
     return NextResponse.json({ url: session.url });
 
   } catch (err: any) {
     console.error('Błąd Checkout API:', err);
-    return NextResponse.json(
-      { error: 'Wystąpił błąd podczas procesowania zamówienia.' },
-      { status: 500 }
-    );
+    return NextResponse.json({ error: 'Błąd serwera' }, { status: 500 });
   }
 }
