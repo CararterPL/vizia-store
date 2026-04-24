@@ -56,11 +56,11 @@ export async function POST(req: Request) {
         delivery_method: deliveryMethod,
         point_name: selectedPoint ? selectedPoint.name : 'N/A',
         vin_assignments: JSON.stringify(vinAssignments),
-        // Dodajemy płaskie pola adresu dla pewności:
+        // TUTAJ POPRAWKA - Mapujemy jawnie każde pole
         buyer_street: shippingAddress?.street || '',
         buyer_city: shippingAddress?.city || '',
-        buyer_zip: shippingAddress?.zipCode || '', // Mapujemy zipCode na zip
-        // I zostawiamy obiekt dla kompatybilności:
+        buyer_zip: shippingAddress?.zipCode || '', // frontend używa zipCode
+        // Dodatkowo cały obiekt jako string
         address: shippingAddress ? JSON.stringify(shippingAddress) : '',
         invoice_requested: invoiceData.wantsInvoice ? 'true' : 'false',
         invoice_details: invoiceData.wantsInvoice ? JSON.stringify(invoiceData) : '',
