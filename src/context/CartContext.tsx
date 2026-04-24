@@ -1,6 +1,7 @@
 'use client';
 
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { supabase } from '../lib/supabase';
 
 interface CartItem {
   id: string;
@@ -8,6 +9,7 @@ interface CartItem {
   price: number;
   size: string;
   vin: string;
+  sessionToken?: string;
   quantity: number;
 }
 
@@ -24,19 +26,17 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 export const CartProvider = ({ children }: { children: React.ReactNode }) => {
   const [items, setItems] = useState<CartItem[]>([]);
 
-  // Inicjalizacja: Pobierz z localStorage przy starcie
   useEffect(() => {
     const savedCart = localStorage.getItem('vizia_cart');
     if (savedCart) {
       try {
         setItems(JSON.parse(savedCart));
       } catch (e) {
-        console.error("Błąd ładowania koszyka z pamięci:", e);
+        console.error("Błąd ładowania koszyka:", e);
       }
     }
   }, []);
 
-  // Synchronizacja: Zapisuj do localStorage przy każdej zmianie
   useEffect(() => {
     localStorage.setItem('vizia_cart', JSON.stringify(items));
   }, [items]);
@@ -46,13 +46,29 @@ export const CartProvider = ({ children }: { children: React.ReactNode }) => {
       const existingItem = prevItems.find(
         (item) => item.id === newItem.id && item.size === newItem.size && item.vin === newItem.vin
       );
-      if (existingItem) return prevItems; // Unikalne VINy - nie dodajemy drugiego takiego samego
+      if (existingItem) return prevItems;
       return [...prevItems, newItem];
     });
   };
 
   const removeItem = (id: string, size: string, vin: string) => {
-    setItems((prevItems) => 
+    // Znajdź item żeby mieć sessionToken
+    const item = items.find(i => i.id === id && i.size === size && i.vin === vin);
+
+    // Zwolnij rezerwację VIN w Supabase
+    if (item) {
+      supabase
+        .from('vin_pool')
+        .update({
+          reserved_until: null,
+          reserved_by_session: null,
+        })
+        .eq('vin_full', vin)
+        .eq('is_sold', false)
+        .then(() => {});
+    }
+
+    setItems((prevItems) =>
       prevItems.filter((item) => !(item.id === id && item.size === size && item.vin === vin))
     );
   };

@@ -2,17 +2,17 @@
 
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../../lib/supabase';
-import { useNRG } from '../../../context/NRGContext'; // Importujemy Context
+import { useNRG } from '../../../context/NRGContext';
 
-export const VinModule = ({ series, baseVin, productId, onVinSelect }: any) => {
-  const { isNRG } = useNRG(); // Pobieramy stan globalny
+export const VinModule = ({ series, baseVin, productId, onVinSelect, onSessionToken }: any) => {
+  const { isNRG } = useNRG();
   const [unitSlot, setUnitSlot] = useState('');
   const [status, setStatus] = useState<'idle' | 'checking' | 'available' | 'taken'>('idle');
   const [autoVin, setAutoVin] = useState<string | null>(null);
 
-  // --- LOGIKA DLA ZWYKŁYCH UŻYTKOWNIKÓW (AUTO-ALLOCATION) ---
+  const now = new Date().toISOString();
+
   useEffect(() => {
-    // Jeśli użytkownik NIE jest NRG, system sam szuka pierwszego wolnego VINu
     if (!isNRG && series !== 'POLE_POSITION' && productId) {
       const fetchAutoVin = async () => {
         const { data } = await supabase
@@ -21,6 +21,8 @@ export const VinModule = ({ series, baseVin, productId, onVinSelect }: any) => {
           .eq('product_id', productId)
           .eq('is_sold', false)
           .is('assigned_at', null)
+          // Pomijaj aktywne rezerwacje
+          .or(`reserved_until.is.null,reserved_until.lt.${now}`)
           .order('vin_full', { ascending: true })
           .limit(1)
           .single();
@@ -34,9 +36,8 @@ export const VinModule = ({ series, baseVin, productId, onVinSelect }: any) => {
       };
       fetchAutoVin();
     }
-  }, [isNRG, productId, series, onVinSelect]);
+  }, [isNRG, productId, series]);
 
-  // --- LOGIKA DLA NRG (MANUAL VERIFICATION) ---
   const checkVinAvailability = async (val: string) => {
     if (val.length !== 2) {
       setStatus('idle');
@@ -45,16 +46,18 @@ export const VinModule = ({ series, baseVin, productId, onVinSelect }: any) => {
     }
 
     setStatus('checking');
-    const fullVin = `${baseVin}-${val}`.toUpperCase(); 
+    const fullVin = `${baseVin}-${val}`.toUpperCase();
 
     const { data, error } = await supabase
       .from('vin_pool')
-      .select('is_sold, assigned_at')
+      .select('is_sold, assigned_at, reserved_until')
       .eq('vin_full', fullVin)
       .eq('product_id', productId)
       .single();
 
-    if (error || !data || data.is_sold || data.assigned_at !== null) {
+    const isReserved = data?.reserved_until && new Date(data.reserved_until) > new Date();
+
+    if (error || !data || data.is_sold || data.assigned_at !== null || isReserved) {
       setStatus('taken');
       onVinSelect(null);
     } else {
@@ -72,15 +75,12 @@ export const VinModule = ({ series, baseVin, productId, onVinSelect }: any) => {
       <div className="flex justify-between items-start">
         <div className="flex flex-col gap-1">
           <span className="text-[9px] font-mono text-zinc-400 uppercase tracking-widest">TWÓJ NUMER VIN</span>
-          
-          {/* Status widoczny tylko przy ręcznym wpisywaniu (NRG) */}
           {isNRG && status !== 'idle' && (
             <span className={`text-[7px] font-mono uppercase tracking-widest ${status === 'available' ? 'text-emerald-500' : 'text-[#ff133a]'}`}>
               {status === 'checking' ? 'SYS_VERIFYING...' : status === 'available' ? 'VIN_DOSTĘPNY' : 'VIN_NIEDOSTĘPNY'}
             </span>
           )}
         </div>
-        
         {isNRG && (
           <span className="text-[8px] bg-emerald-500/10 text-emerald-500 px-2 py-0.5 border border-emerald-500/20 uppercase font-mono italic font-bold tracking-widest animate-pulse">
             NRG_SUBSCRIBER_UNLOCKED
@@ -90,36 +90,17 @@ export const VinModule = ({ series, baseVin, productId, onVinSelect }: any) => {
 
       <div className="flex items-baseline">
         <span className={`${vinTextStyle} opacity-20`}>{baseVin}-</span>
-        
         {isNRG ? (
-          <input 
+          <input
             type="text"
-            maxLength={2} 
+            maxLength={2}
             value={unitSlot}
             onChange={(e) => {
               const val = e.target.value.replace(/\D/g, '');
               setUnitSlot(val);
               checkVinAvailability(val);
             }}
-            className={`
-              ${vinTextStyle} 
-              w-[1.8em] 
-              bg-transparent 
-              border-b-2
-              border-x-0
-              border-t-0
-              ${status === 'taken' ? 'border-[#ff133a] text-[#ff133a]' : 'border-white text-white'} 
-              outline-none 
-              text-center 
-              p-0 
-              m-0 
-              ml-1
-              transition-all
-              duration-300
-              placeholder:text-zinc-900
-              appearance-none
-              focus:ring-0
-            `}
+            className={`${vinTextStyle} w-[1.8em] bg-transparent border-b-2 border-x-0 border-t-0 ${status === 'taken' ? 'border-[#ff133a] text-[#ff133a]' : 'border-white text-white'} outline-none text-center p-0 m-0 ml-1 transition-all duration-300 placeholder:text-zinc-900 appearance-none focus:ring-0`}
             placeholder="XX"
           />
         ) : (
@@ -132,9 +113,9 @@ export const VinModule = ({ series, baseVin, productId, onVinSelect }: any) => {
       {!isNRG && (
         <div className="pt-4 border-t border-white/5">
           <p className="text-[10px] font-mono text-zinc-300 uppercase leading-tight">
-             STATUS: <span className={autoVin ? "text-white" : "text-red-500"}>
-               {autoVin ? `VIN_${autoVin.split('-').pop()}_DOSTĘPNY` : 'VIN_NIEDOSTĘPNY'}
-             </span>
+            STATUS: <span className={autoVin ? "text-white" : "text-red-500"}>
+              {autoVin ? `VIN_${autoVin.split('-').pop()}_DOSTĘPNY` : 'VIN_NIEDOSTĘPNY'}
+            </span>
           </p>
         </div>
       )}

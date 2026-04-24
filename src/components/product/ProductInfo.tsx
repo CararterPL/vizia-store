@@ -32,46 +32,52 @@ export const ProductInfo = ({ product, isNRG = false }: any) => {
     isClassicsGarage = now > classicsDate;
   }
 
-  const handleAddToCart = async () => {
-    setUiMessage(null);
-    if (!selectedSize) { setUiMessage({ type: 'error', text: 'SYSTEM_ERROR: WYBIERZ_ROZMIAR' }); return; }
-    if (!selectedVin) { setUiMessage({ type: 'error', text: 'SYSTEM_ERROR: VIN_NIE_WYBRANY' }); return; }
+const handleAddToCart = async () => {
+  setUiMessage(null);
+  if (!selectedSize) { setUiMessage({ type: 'error', text: 'SYSTEM_ERROR: WYBIERZ_ROZMIAR' }); return; }
+  if (!selectedVin) { setUiMessage({ type: 'error', text: 'SYSTEM_ERROR: VIN_NIE_WYBRANY' }); return; }
 
-    setIsReserving(true);
-    const cleanVin = selectedVin.trim().toUpperCase();
-    
-    // USUWAMY filtr product_id na moment testu, żeby sprawdzić czy to on nie blokuje 
-    // (czasem ID w bazie to UUID, a w kodzie string i się nie parują)
-    const { data, error } = await supabase
-      .from('vin_pool')
-      .update({ assigned_at: new Date().toISOString() })
-      .eq('vin_full', cleanVin)
-      .eq('is_sold', false)
-      .is('assigned_at', null)
-      .select();
+  setIsReserving(true);
+  const cleanVin = selectedVin.trim().toUpperCase();
+  const sessionToken = crypto.randomUUID();
+  const reservedUntil = new Date(Date.now() + 30 * 60 * 1000).toISOString(); // 30 minut
+  const now = new Date().toISOString();
 
-    if (error || !data || data.length === 0) {
-      console.log("UPDATE_ATTEMPT_FAILED", { cleanVin, error, data });
-      setUiMessage({ type: 'error', text: 'LOCK_FAILED: UNIT_BUSY_OR_NOT_FOUND' });
-      setIsReserving(false);
-      setRefreshTrigger(prev => prev + 1);
-      return;
-    }
+  const { data, error } = await supabase
+    .from('vin_pool')
+    .update({
+      reserved_until: reservedUntil,
+      reserved_by_session: sessionToken,
+    })
+    .eq('vin_full', cleanVin)
+    .eq('is_sold', false)
+    .is('assigned_at', null)
+    // Tylko niezarezerwowane lub z wygasłą rezerwacją
+    .or(`reserved_until.is.null,reserved_until.lt.${now}`)
+    .select();
 
-    addItem({
-      id: product.id,
-      name: product.name,
-      price: product.price,
-      size: selectedSize,
-      vin: cleanVin,
-      quantity: 1
-    });
-
-    setUiMessage({ type: 'success', text: `UNIT_LOCKED: ${cleanVin.split('-').pop()}` });
-    setRefreshTrigger(prev => prev + 1);
-    setSelectedVin(null);
+  if (error || !data || data.length === 0) {
+    setUiMessage({ type: 'error', text: 'LOCK_FAILED: UNIT_BUSY_OR_NOT_FOUND' });
     setIsReserving(false);
-  };
+    setRefreshTrigger(prev => prev + 1);
+    return;
+  }
+
+  addItem({
+    id: product.id,
+    name: product.name,
+    price: product.price,
+    size: selectedSize,
+    vin: cleanVin,
+    sessionToken, // przekazujemy token do koszyka
+    quantity: 1
+  });
+
+  setUiMessage({ type: 'success', text: `UNIT_LOCKED: ${cleanVin.split('-').pop()}` });
+  setRefreshTrigger(prev => prev + 1);
+  setSelectedVin(null);
+  setIsReserving(false);
+};
 
   return (
     <div className="space-y-10">
