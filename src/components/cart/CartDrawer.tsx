@@ -12,8 +12,6 @@ export const CartDrawer = ({ isOpen, onClose }: { isOpen: boolean, onClose: () =
   const [itemImages, setItemImages] = useState<Record<string, string>>({});
 
   useEffect(() => {
-    // Ładujemy zdjęcia zawsze, gdy są przedmioty, 
-    // aby Next.js miał je gotowe (rozwiązuje błędy LCP przy interakcji)
     if (items.length === 0) return;
 
     async function fetchImages() {
@@ -21,15 +19,29 @@ export const CartDrawer = ({ isOpen, onClose }: { isOpen: boolean, onClose: () =
       const uniqueProductIds = Array.from(new Set(items.map(item => item.id)));
 
       for (const productId of uniqueProductIds) {
+        // 1. Próbujemy pobrać z bazy
         const { data } = await supabase
           .from('product_images')
           .select('url')
           .eq('product_id', productId)
-          .eq('display_order', 1) // Zawsze FRONT
+          .eq('display_order', 1)
           .maybeSingle();
         
         if (data?.url) {
           imageMap[productId] = data.url;
+        } else {
+          // 2. FALLBACK: Jeśli nie ma w bazie, generujemy URL na podstawie nazwy przedmiotu
+          // Szukamy przedmiotu w koszyku, żeby znać jego nazwę (np. "MINI JCW GP")
+          const item = items.find(i => i.id === productId);
+          if (item) {
+            const slug = item.name.toLowerCase()
+              .replace(/ /g, '')      // usuwamy spacje
+              .replace(/jcw/g, '');   // opcjonalnie czyścimy specyficzne frazy
+            
+            // Zakładam, że Twoje zdjęcia są w folderze /public/images/
+            // Jeśli są w Supabase Storage, podmień ścieżkę poniżej
+            imageMap[productId] = `/images/vizia-${slug}_1.webp`;
+          }
         }
       }
       setItemImages(imageMap);
@@ -69,19 +81,22 @@ export const CartDrawer = ({ isOpen, onClose }: { isOpen: boolean, onClose: () =
                 <p className="font-mono text-[10px] uppercase tracking-widest text-white">Bagażnik jest pusty</p>
               </div>
             ) : (
-              items.map((item) => (
-                <div key={`${item.id}-${item.vin}`} className="group relative flex gap-6 pb-8 border-b border-white/5">
+              items.map((item, idx) => (
+                <div key={`${item.id}-${item.vin}-${idx}`} className="group relative flex gap-6 pb-8 border-b border-white/5">
                   <div className="relative w-28 h-32 bg-zinc-900 border border-white/5 overflow-hidden flex-shrink-0">
-                    {/* KLUCZOWA ZMIANA: Dodany unikalny KEY i wymuszony priorytet ładowania */}
                     {itemImages[item.id] ? (
                       <img
                         src={itemImages[item.id]}
                         alt={item.name}
                         className="w-full h-full object-cover grayscale transition-all duration-700 group-hover:grayscale-0"
+                        onError={(e) => {
+                          // Jeśli nawet ten URL padnie, dajemy pusty placeholder
+                          (e.target as HTMLImageElement).src = 'https://via.placeholder.com/400x500?text=NO+IMAGE';
+                        }}
                       />
                     ) : (
                       <div className="w-full h-full bg-zinc-950 animate-pulse flex items-center justify-center">
-                         <span className="text-[8px] text-zinc-800 font-mono">LOADING...</span>
+                         <span className="text-[8px] text-zinc-800 font-mono tracking-widest">LOADING...</span>
                       </div>
                     )}
                   </div>
