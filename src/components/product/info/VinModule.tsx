@@ -38,33 +38,52 @@ export const VinModule = ({ series, baseVin, productId, onVinSelect, onSessionTo
     }
   }, [isNRG, productId, series]);
 
-  const checkVinAvailability = async (val: string) => {
-    if (val.length !== 2) {
-      setStatus('idle');
+const checkVinAvailability = async (val: string) => {
+  if (val.length !== 2) {
+    setStatus('idle');
+    onVinSelect(null);
+    return;
+  }
+
+  setStatus('checking');
+  const fullVin = `${baseVin}-${val.padStart(2, '0')}`.toUpperCase();
+
+  const { data, error } = await supabase
+    .from('vin_pool')
+    .select('is_sold, assigned_at, reserved_until, reserved_by_session')
+    .eq('vin_full', fullVin)
+    .eq('product_id', productId)
+    .single();
+
+  console.log('VinModule check:', fullVin, data, error);
+
+  if (error || !data) {
+    setStatus('taken');
+    onVinSelect(null);
+    return;
+  }
+
+  if (data.is_sold) {
+    setStatus('taken');
+    onVinSelect(null);
+    return;
+  }
+
+  // Sprawdź rezerwację — tylko jeśli reserved_until jest w przyszłości
+  if (data.reserved_until) {
+    const reservedUntilDate = new Date(data.reserved_until);
+    const nowDate = new Date();
+    if (reservedUntilDate > nowDate) {
+      setStatus('taken');
       onVinSelect(null);
       return;
     }
+  }
 
-    setStatus('checking');
-    const fullVin = `${baseVin}-${val}`.toUpperCase();
-
-    const { data, error } = await supabase
-      .from('vin_pool')
-      .select('is_sold, assigned_at, reserved_until')
-      .eq('vin_full', fullVin)
-      .eq('product_id', productId)
-      .single();
-
-    const isReserved = data?.reserved_until && new Date(data.reserved_until) > new Date();
-
-    if (error || !data || data.is_sold || isReserved) {
-      setStatus('taken');
-      onVinSelect(null);
-    } else {
-      setStatus('available');
-      onVinSelect(fullVin);
-    }
-  };
+  // VIN dostępny
+  setStatus('available');
+  onVinSelect(fullVin);
+};
 
   if (series === 'POLE_POSITION') return null;
 
