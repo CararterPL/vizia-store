@@ -3,37 +3,47 @@ import Stripe from 'stripe';
 import { createClient } from '@supabase/supabase-js';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2026-02-25.clover',
+  apiVersion: '2026-02-25.clover' as any, // Wymuszamy wersję lub używamy najnowszej dostępnej
 });
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
-  process.env.SUPABASE_SERVICE_ROLE_KEY!
+  process.env.SUPABASE_SERVICE_ROLE_KEY! // Używamy Service Role, aby ominąć RLS przy zapisie zamówienia
 );
 
 export async function POST(req: Request) {
   try {
-    const { items, email, buyerData, invoiceData, deliveryMethod, selectedPoint, shippingAddress } = await req.json();
+    const { 
+      items, 
+      email, 
+      buyerData, 
+      invoiceData, 
+      deliveryMethod, 
+      selectedPoint, 
+      shippingAddress 
+    } = await req.json();
 
-    // 1. VINy są już zarezerwowane przy dodaniu do koszyka
+    // 1. Przygotowanie mapy VINów dla Webhooka (uproszczony format)
     const vinAssignments = items.map((item: any) => ({
       vinFull: item.vin,
     }));
 
-    // 2. Utwórz sesję Stripe Checkout
+    // 2. Przygotowanie pozycji koszyka dla Stripe
     const line_items = items.map((item: any) => ({
       price_data: {
         currency: 'pln',
         product_data: {
-          name: `${item.name} — VIN: ${item.vin}`,
+          name: `${item.name}`,
+          description: `VIN: ${item.vin} | Rozmiar: ${item.size}`,
         },
         unit_amount: Math.round(item.price * 100),
       },
       quantity: 1,
     }));
 
-    const origin = req.headers.get('origin') || 'https://vizia.pl';
+    const origin = req.headers.get('origin') || 'https://viziawear.com';
 
+    // 3. Utworzenie sesji Stripe Checkout
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card', 'blik'],
       line_items,
@@ -44,15 +54,18 @@ export async function POST(req: Request) {
       metadata: {
         buyer_name: `${buyerData.firstName} ${buyerData.lastName}`,
         buyer_phone: buyerData.phone,
-        delivery: deliveryMethod,
-        point: selectedPoint ? selectedPoint.name : '',
-        address: shippingAddress ? JSON.stringify(shippingAddress) : '',
+        delivery_method: deliveryMethod,
+        point_name: selectedPoint ? selectedPoint.name : 'N/A',
+        // Stripe metadata przyjmuje tylko stringi, więc obiekty musimy zserializować
         vin_assignments: JSON.stringify(vinAssignments),
+        invoice_requested: invoiceData.wantsInvoice ? 'true' : 'false',
+        invoice_details: invoiceData.wantsInvoice ? JSON.stringify(invoiceData) : '',
       },
     });
 
-    // 3. Zapisz zamówienie w Supabase ze statusem 'pending'
-    await supabase.from('orders').insert({
+    // 4. Zapisanie zamówienia w Supabase ze statusem 'pending'
+    // Zapisujemy wszystko, co będzie potrzebne webhookowi lub adminowi
+    const { error: orderError } = await supabase.from('orders').insert({
       status: 'pending',
       customer_email: email,
       customer_phone: buyerData.phone,
@@ -61,21 +74,17 @@ export async function POST(req: Request) {
       address_json: shippingAddress ?? null,
       assigned_vin: items.map((i: any) => i.vin).join(', '),
       stripe_session_id: session.id,
+      total_amount: items.reduce((sum: number, i: any) => sum + i.price, 0),
+      // Tutaj możesz zapisać invoiceData jako JSONB jeśli masz taką kolumnę
     });
 
-    // 4. Wyślij e-mail do drukarni
-    await fetch(`${origin}/api/send-order-email`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        items,
-        buyerData,
-        invoiceData,
-        deliveryMethod,
-        selectedPoint,
-        shippingAddress,
-      }),
-    });
+    if (orderError) {
+      console.error('Supabase Order Error:', orderError);
+      // Nie przerywamy, bo sesja Stripe już jest utworzona, ale logujemy błąd
+    }
+
+    // UWAGA: Usunąłem stąd wysyłkę e-maila do drukarni. 
+    // Przenieś ją do webhook/route.ts pod event 'checkout.session.completed'.
 
     return NextResponse.json({ url: session.url });
 
