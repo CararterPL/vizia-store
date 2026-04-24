@@ -7,7 +7,10 @@ const COPY_EMAIL = ['vince@cararter.pl', 'biuro@ihaft.pl'];
 
 export async function POST(req: Request) {
   try {
-    const { items, buyerData, invoiceData, deliveryMethod, selectedPoint, shippingAddress } = await req.json();
+    const body = await req.json();
+    console.log('BODY RECEIVED:', JSON.stringify(body, null, 2));
+    const { items, buyerData, invoiceData, deliveryMethod, selectedPoint, shippingAddress } = body;
+    console.log('invoiceData:', JSON.stringify(invoiceData));
 
     const orderDate = new Date().toLocaleString('pl-PL', {
       timeZone: 'Europe/Warsaw',
