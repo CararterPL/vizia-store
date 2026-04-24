@@ -97,28 +97,33 @@ export async function POST(req: Request) {
       const isPaczkomat = deliveryMethod === 'paczkomat';
 
       const orderData = {
-        items,
-        buyerData: {
-          firstName,
-          lastName,
-          phone: metadata?.buyer_phone || '',
-          email: session.customer_details?.email || session.customer_email || '',
-        },
-        invoiceData: {
-          wantsInvoice: metadata?.invoice_requested === 'true',
-        },
-        deliveryMethod,
-        selectedPoint: isPaczkomat ? {
-          name: metadata?.point_name || '',
-          address_details: { street: '', city: '' },
-        } : null,
-        shippingAddress: !isPaczkomat ? {
-          street: metadata?.buyer_street || '',
-          city: metadata?.buyer_city || '',
-          zipCode: metadata?.buyer_zip || '',
-        } : null,
-        stripeOrderId: session.id,
-      };
+  items,
+  buyerData: {
+    firstName,
+    lastName,
+    phone: metadata?.buyer_phone || '',
+    email: session.customer_details?.email || session.customer_email || '',
+  },
+  invoiceData: {
+    wantsInvoice: metadata?.invoice_requested === 'true',
+    companyName: metadata?.invoice_company || '',
+    nip: metadata?.invoice_nip || '',
+    street: metadata?.invoice_street || '',
+    city: metadata?.invoice_city || '',
+    zipCode: metadata?.invoice_zip || '',
+  },
+  deliveryMethod,
+  selectedPoint: isPaczkomat ? {
+    name: metadata?.point_name || '',
+    address: metadata?.point_address || '',
+  } : null,
+  shippingAddress: !isPaczkomat ? {
+    street: metadata?.buyer_street || '',
+    city: metadata?.buyer_city || '',
+    zipCode: metadata?.buyer_zip || '',
+  } : null,
+  stripeOrderId: session.id,
+};
 
       console.log('📦 OrderData dla maila:', JSON.stringify(orderData, null, 2));
 

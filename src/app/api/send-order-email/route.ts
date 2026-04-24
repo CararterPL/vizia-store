@@ -18,19 +18,19 @@ export async function POST(req: Request) {
     const totalPrice = items.reduce((sum: number, item: any) => sum + item.price, 0);
 
     const deliveryText = deliveryMethod === 'paczkomat'
-      ? `Paczkomat InPost: ${selectedPoint?.name || 'N/A'}`
-      : `Kurier: ${shippingAddress?.street || ''}, ${shippingAddress?.zipCode || ''} ${shippingAddress?.city || ''}`;
+  ? `Paczkomat InPost: ${selectedPoint?.name || 'N/A'}${selectedPoint?.address ? ` / ${selectedPoint.address}` : ''}`
+  : `Kurier: ${shippingAddress?.street || ''}, ${shippingAddress?.zipCode || ''} ${shippingAddress?.city || ''}`;
 
-    const invoiceText = invoiceData?.wantsInvoice
-      ? `
-        <tr><td colspan="2" style="padding:16px 0 8px;border-top:1px solid #e0e0e0;">
-          <strong style="font-size:11px;letter-spacing:2px;text-transform:uppercase;">FAKTURA VAT</strong>
-        </td></tr>
-        <tr><td style="padding:4px 16px 4px 0;color:#666;">Firma</td><td>${invoiceData.companyName}</td></tr>
-        <tr><td style="padding:4px 16px 4px 0;color:#666;">NIP</td><td>${invoiceData.nip}</td></tr>
-        <tr><td style="padding:4px 16px 4px 0;color:#666;">Adres</td><td>${invoiceData.street}, ${invoiceData.zipCode} ${invoiceData.city}</td></tr>
-      `
-      : `<tr><td colspan="2" style="padding:16px 0 4px;color:#666;border-top:1px solid #e0e0e0;font-size:12px;">Klient nie chce faktury VAT</td></tr>`;
+const invoiceText = invoiceData?.wantsInvoice
+  ? `
+    <tr><td colspan="2" style="padding:16px 0 8px;border-top:1px solid #e0e0e0;">
+      <strong style="font-size:11px;letter-spacing:2px;text-transform:uppercase;">FAKTURA VAT</strong>
+    </td></tr>
+    <tr><td style="padding:4px 16px 4px 0;color:#666;">Firma</td><td>${invoiceData.companyName || 'N/A'}</td></tr>
+    <tr><td style="padding:4px 16px 4px 0;color:#666;">NIP</td><td>${invoiceData.nip || 'N/A'}</td></tr>
+    <tr><td style="padding:4px 16px 4px 0;color:#666;">Adres</td><td>${invoiceData.street || ''}, ${invoiceData.zipCode || ''} ${invoiceData.city || ''}</td></tr>
+  `
+  : `<tr><td colspan="2" style="padding:16px 0 4px;color:#666;border-top:1px solid #e0e0e0;font-size:12px;">Klient nie chce faktury VAT</td></tr>`;
 
     const itemsHtml = items.map((item: any) => `
       <tr>

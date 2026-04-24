@@ -53,13 +53,18 @@ export async function POST(req: Request) {
         buyer_phone: String(buyerData?.phone || ''),
         delivery_method: String(deliveryMethod || 'kurier'),
         point_name: selectedPoint?.name || 'N/A',
+        point_address: selectedPoint ? `${selectedPoint.address_details?.street || ''} ${selectedPoint.address_details?.building_number || ''}, ${selectedPoint.address_details?.city || ''}`.trim() : '',
         vin_assignments: JSON.stringify(items.map((i: any) => ({ vinFull: i.vin, size: i.size }))),
-        // Dane adresowe - muszą być płaskimi stringami
         buyer_street: String(shippingAddress?.street || ''),
         buyer_city: String(shippingAddress?.city || ''),
         buyer_zip: String(shippingAddress?.zipCode || ''),
         invoice_requested: invoiceData?.wantsInvoice ? 'true' : 'false',
-      },
+        invoice_company: invoiceData?.wantsInvoice ? String(invoiceData?.companyName || '') : '',
+        invoice_nip: invoiceData?.wantsInvoice ? String(invoiceData?.nip || '') : '',
+        invoice_street: invoiceData?.wantsInvoice ? String(invoiceData?.street || '') : '',
+        invoice_city: invoiceData?.wantsInvoice ? String(invoiceData?.city || '') : '',
+        invoice_zip: invoiceData?.wantsInvoice ? String(invoiceData?.zipCode || '') : '',
+  },
     });
 
     // Zapis do bazy - USUNĄŁEM total_amount, bo powoduje błąd w Twoim Supabase
