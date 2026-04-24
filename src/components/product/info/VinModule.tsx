@@ -57,7 +57,7 @@ export const VinModule = ({ series, baseVin, productId, onVinSelect, onSessionTo
 
     const isReserved = data?.reserved_until && new Date(data.reserved_until) > new Date();
 
-    if (error || !data || data.is_sold || data.assigned_at !== null || isReserved) {
+    if (error || !data || data.is_sold || isReserved) {
       setStatus('taken');
       onVinSelect(null);
     } else {

@@ -51,8 +51,6 @@ const handleAddToCart = async () => {
     })
     .eq('vin_full', cleanVin)
     .eq('is_sold', false)
-    .is('assigned_at', null)
-    // Tylko niezarezerwowane lub z wygasłą rezerwacją
     .or(`reserved_until.is.null,reserved_until.lt.${now}`)
     .select();
 
